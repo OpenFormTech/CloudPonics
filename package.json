@@ -1,0 +1,22 @@
+{
+  "name": "cloudponics-app",
+  "version": "0.1.0",
+  "description": "A cloud SaaS IoT dashboard, implementing Identity and Access Management for users and organizations, realtime device monitoring and management, and cloud storage.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OpenFormTech/CloudPonics-App.git"
+  },
+  "author": "JLefebvre55",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/OpenFormTech/CloudPonics-App/issues"
+  },
+  "homepage": "https://github.com/OpenFormTech/CloudPonics-App#readme",
+  "dependencies": {
+    "firebase": "^7.24.0"
+  }
+}
