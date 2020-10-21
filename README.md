@@ -1,4 +1,4 @@
-![CloudPonics Logo](src/images/LogoTransparent.svg)
+![CloudPonics Logo](public/src/images/LogoTransparent.svg)
 
 A cloud SaaS IoT dashboard, implementing Identity and Access Management for users and organizations, realtime device monitoring and management, and cloud storage.
 
@@ -12,10 +12,10 @@ Developed to be used with [PeaPod](https://github.com/OpenFormTech/PeaPod-RPi) a
 4. Execute `firebase init`, and login to Firebase with your credentials. 
 5. For all following prompts (in order):
     - Select _Hosting_ and _Emulators_
-    - Default
-    - `y`
-    - `N`
-    - `N`
+    - `public`
+    - `n`
+    - `n`
+    - `n`
     - Select _Hosting Emulator_
     - `y`
 6. To run the Hosting emulator, execute `firebase serve` and navigate to `localhost:5000` in a browser.
