@@ -17,7 +17,5 @@ Developed to be used with [PeaPod](https://github.com/OpenFormTech/PeaPod-RPi) a
     - `N`
     - `N`
     - Select _Hosting Emulator_
-    - Default
-    - Blank
     - `y`
 6. To run the Hosting emulator, execute `firebase serve` and navigate to `localhost:5000` in a browser.
