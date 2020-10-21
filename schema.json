@@ -1,0 +1,90 @@
+{
+    "devices" : {
+        "device-uuid" : {
+            "state" : 0,
+            "run" : "run-uuid",
+            "metadata" : {
+                "owner" : "user-uuid",
+                "creation-timestamp" : 12345678
+            },
+            "info" : {
+                "name" : "Scoobert Doobert Device"
+            }
+        }
+    },
+    "projectlist" : {
+        "project-uuid" : true
+    },
+    "projects" : {
+        "project-uuid" : {
+            "runlist" : {
+                "run-uuid" : true
+            },
+            "runs" : {
+                "run-uuid" : {
+                    "data": {
+                        "dataset-label" : {
+                            "datapoint-uuid" : {
+                                "timestamp" : 12345678,
+                                "value" : 69
+                            }
+                        }
+                    },
+                    "info" : {
+                        "device" : "device-uuid",
+                        "name" : "Scoobert Doobert Run 1",
+                        "complete" : false,
+                        "program" : "program-uuid"
+                    },
+                    "metadata" : {
+                        "creation-timestamp" : 12345678,
+                        "owner" : "user-uuid"
+                    }
+                }
+            },
+            "programlist" : {
+                "program-uuid" : true
+            },
+            "programs" : {
+                "program-uuid" : {
+                    "info" : {
+                        "project-uuid" : "project-uuid",
+                        "name" : "Scoobert Doobert Program 1"
+                    },
+                    "phases" : [
+                        {
+                            "duration" : 69,
+                            "environment" : {
+                                "some-variable" : 69
+                            }
+                        }
+                    ]
+                }
+            },
+            "metadata" : {
+                "creation-timestamp" : 12345678,
+                "owner" : "user-uuid"
+            },
+            "info" : {
+                "name" : "Scoobert Doobert Project",
+                "species" : "Scoobert Doobert"
+            }
+        }
+    },
+    "users" : {
+        "user-uuid" : {
+            "devices" : {
+                "device-uuid" : true
+            },
+            "metadata" : {
+                "creation-timestamp" : 12345678
+            },
+            "runs" : {
+                "run-uuid" : "project-uuid"
+            },
+            "projects" : {
+                "project-uuid" : true
+            }
+        }
+    }
+}
