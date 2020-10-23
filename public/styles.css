@@ -11,7 +11,7 @@
 
 #google{}
 
-.signInButton{
+.authButton{
     width: 100%;
     height: 3rem;
     border-radius: 20px;
@@ -23,7 +23,7 @@
     font-weight: 300;
 }
 
-.signInButton:hover{
+.authButton:hover{
     background-color: var(--button-color-highlight);
     transition: background-color 5ms ease;
 }
