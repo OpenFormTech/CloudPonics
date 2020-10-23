@@ -5,11 +5,11 @@
     --button-color-highlight: #264077
 }
 
-#signedOut{}
+/* #signedOut{}
 
 #signedIn{}
 
-#google{}
+#google{} */
 
 .authButton{
     width: 100%;
