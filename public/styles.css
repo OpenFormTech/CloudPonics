@@ -1,0 +1,48 @@
+:root{
+    --item-color: white;
+    --base-color: #fbfbfb;
+    --button-color: #203563;
+    --button-color-highlight: #264077
+}
+
+/* #signedOut{}
+
+#signedIn{}
+
+#google{} */
+
+.authButton{
+    width: 100%;
+    height: 3rem;
+    border-radius: 20px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    background-color: var(--button-color);
+    color: white;
+    font-weight: 300;
+}
+
+.authButton:hover{
+    background-color: var(--button-color-highlight);
+    transition: background-color 5ms ease;
+}
+
+body{
+    font-size: 16px;
+    font-family: 'Roboto', sans-serif;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: var(--base-color);
+}
+
+#appBackground{
+    font-weight: 400;
+    padding: 6rem;
+    margin-top: 3rem;
+    border: 0.115rem solid #ebecef;
+    border-radius: 0.5rem;
+    background-color: var(--item-color);
+}
