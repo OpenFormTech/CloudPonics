@@ -15,19 +15,7 @@
 
       <h1>Welcome to CloudPonics</h1>
 
-      <section id="signedOut">
-  
-        <button id="google" class="authButton">Sign into Google</button>
-  
-      </section>
-      
-      <section id="signedIn" hidden>
-  
-        <div id="userDetails"></div>
-
-        <button id="signOutButton" class="authButton">Sign out</button>
-  
-      </section>
+      <div id="firebaseui-auth-container"></div>
 
     </div>
 
@@ -40,7 +28,11 @@
     <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-functions.js"></script>
 
     <!-- main web app -->
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
+
+    <!-- firebase ui -->
+    <script src="https://www.gstatic.com/firebasejs/ui/4.6.1/firebase-ui-auth.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/4.6.1/firebase-ui-auth.css" />
 
   </body>
 
