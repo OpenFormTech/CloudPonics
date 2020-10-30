@@ -51,14 +51,14 @@
                         "project-uuid" : "project-uuid",
                         "name" : "Scoobert Doobert Program 1"
                     },
-                    "phases" : [
-                        {
+                    "phases" : {
+                        "0": {
                             "duration" : 69,
                             "environment" : {
                                 "some-variable" : 69
                             }
                         }
-                    ]
+                    }
                 }
             },
             "metadata" : {
