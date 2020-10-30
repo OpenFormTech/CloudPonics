@@ -15,3 +15,7 @@ ui.start('#firebaseui-auth-container', uiConfig);
 // const auth = firebase.auth();
 // const functions = firebase.functions();
 // const database = firebase.database();
+
+/**
+ * centralize init-firebase.js and firebaseui.js to one file
+ */
