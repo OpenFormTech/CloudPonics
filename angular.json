@@ -117,8 +117,13 @@
               "devServerTarget": "CloudPonics-App:serve:production"
             }
           }
+        },
+        "deploy": {
+          "builder": "@angular/fire:deploy",
+          "options": {}
         }
       }
-    }},
+    }
+  },
   "defaultProject": "CloudPonics-App"
 }
