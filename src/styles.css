@@ -1,1 +1,26 @@
 /* You can add global styles to this file, and also import other style files */
+:root{
+    --item-color: white;
+    --base-color: #fbfbfb;
+    --button-color: #203563;
+    --button-color-highlight: #264077
+}
+
+body{
+    font-size: 16px;
+    font-family: 'Roboto', sans-serif;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: var(--base-color);
+}
+
+#appBackground{
+    font-weight: 400;
+    padding: 6rem;
+    margin-top: 3rem;
+    border: 0.115rem solid #ebecef;
+    border-radius: 0.5rem;
+    background-color: var(--item-color);
+}
