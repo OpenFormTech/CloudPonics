@@ -1,4 +1,4 @@
-![CloudPonics Logo](public/src/images/LogoTransparent.svg)
+![CloudPonics Logo](src/assets/images/LogoTransparent.svg)
 
 A cloud SaaS IoT dashboard, implementing Identity and Access Management for users and organizations, realtime device monitoring and management, and cloud storage.
 
