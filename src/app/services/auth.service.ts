@@ -22,7 +22,7 @@ import { switchMap } from 'rxjs/operators';
 @Injectable({
   providedIn: 'root'
 })
-export class AuthServiceService {
+export class AuthService {
   user$: Observable<firebase.User>;
 
   constructor(
