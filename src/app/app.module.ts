@@ -11,10 +11,16 @@ import { AngularFireFunctionsModule } from '@angular/fire/functions';
 import { AngularFireAnalyticsModule } from '@angular/fire/analytics';
 import { AngularFireDatabaseModule } from '@angular/fire/database';
 import { environment } from '../environments/environment';
+import { LoginComponent } from './login/login.component';
+import { LandingComponent } from './landing/landing.component';
+import { DashboardComponent } from './dashboard/dashboard.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    LoginComponent,
+    LandingComponent,
+    DashboardComponent
   ],
   imports: [
     BrowserModule,
