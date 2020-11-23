@@ -1,1 +1,5 @@
-<p>dashboard works!</p>
+<div *ngIf="auth.user$ | async as user">
+    <p>Welcome {{user.displayName}}.</p>
+</div>
+
+<button class="button" (click)="auth.signOut()">Sign Out</button>
