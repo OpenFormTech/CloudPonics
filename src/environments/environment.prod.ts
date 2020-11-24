@@ -1,6 +1,6 @@
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
+export const environment = {
+  production: false,
+  firebaseConfig: {
     apiKey: "AIzaSyC7iBFv4PEmWss4h_Ul01Mpkzgpu2GuXao",
     authDomain: "peapod-283416.firebaseapp.com",
     databaseURL: "https://peapod-283416.firebaseio.com",
@@ -9,8 +9,5 @@ const firebaseConfig = {
     messagingSenderId: "513099710307",
     appId: "1:513099710307:web:9280ad994c219256f79d56",
     measurementId: "G-39TFQEV2HD"
+  }
 };
-
-// export function initfirebase(config){firebase.initializeApp(config)};
-
-export { firebaseConfig };
