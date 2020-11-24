@@ -10,6 +10,6 @@ Developed to be used with [PeaPod](https://github.com/OpenFormTech/PeaPod-RPi) a
 2. Execute `npm install .`
 3. To run the Hosting emulator, execute `ng serve` and navigate to `localhost:4200` in a browser.
 
-# Deployment
+# Building and Deployment
 
-1. Type [`ng deploy`](https://angular.io/start/start-deployment) into a terminal in the local directory.
+Execute [`ng deploy`](https://angular.io/start/start-deployment) in the local directory.
