@@ -1,15 +1,11 @@
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
-import { DashboardComponent } from './dashboard/dashboard.component';
-import { LandingComponent } from './landing/landing.component';
-import { LoginComponent } from './login/login.component';
-
+import { RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
-  { path: "",  pathMatch: "full", redirectTo: "/landing" },
-  { path: "login", pathMatch: "full", component: LoginComponent },
-  { path: "landing", pathMatch: "full", component: LandingComponent },
-  { path: "dashboard", pathMatch: "full", component: DashboardComponent },
+  { path: "", pathMatch: "full", redirectTo: "landing"},
+  { path: "landing", pathMatch: "full", loadChildren: async () => (await import('./landing/landing.module')).LandingModule },
+  { path: "login", pathMatch: "full", loadChildren: async () => (await import('./login/login.module')).LoginModule, },
+  // { path: "dashboard", pathMatch: "full", component: DashboardComponent },
 ];
 
 @NgModule({

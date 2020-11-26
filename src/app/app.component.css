@@ -1,8 +1,0 @@
-#appBackground{
-    font-weight: 400;
-    padding: 6rem;
-    margin-top: 3rem;
-    border: 0.115rem solid #ebecef;
-    border-radius: 0.5rem;
-    background-color: var(--item-color);
-}

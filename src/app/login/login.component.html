@@ -1,9 +1,9 @@
-<div *ngIf="user else login">
-    <p>Loading...</p>
+<div class="login-flex">
+    <!-- <div class="login-icon"> -->
+        <img class="mb-4" src="../../assets/images/IconWhite.svg" alt="" width="5%" height="5%">
+    <!-- </div> -->
+    <!-- <div class="login-header"> -->
+        <h1 class="h-3 font-weight-bold">Sign in to CloudPonics</h1>
+    <!-- </div> -->
+    <firebase-ui></firebase-ui>
 </div>
-
-<ng-template #login>
-    <button class="button" (click)="auth.googleSignIn()">Login with Google</button>
-    <button class="button" (click)="auth.githubSignIn()">Login with GitHub</button>
-    <button class="button" (click)="auth.emailSignIn()">Login with Email</button>
-</ng-template>

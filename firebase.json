@@ -1,16 +1,8 @@
 {
   "hosting": [
     {
-      "public": "public",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ]
-    },
-    {
-      "target": "CloudPonics-App",
-      "public": "dist/CloudPonics-App",
+      "target": "cloudponics",
+      "public": "dist/cloudponics",
       "ignore": [
         "**/.*"
       ],
@@ -32,13 +24,5 @@
         }
       ]
     }
-  ],
-  "emulators": {
-    "hosting": {
-      "port": 5000
-    },
-    "ui": {
-      "enabled": true
-    }
-  }
+  ]
 }

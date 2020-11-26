@@ -1,6 +1,6 @@
 export const environment = {
-  production: false,
-  firebaseConfig: {
+  production: true,
+  firebaseConfig : {
     apiKey: "AIzaSyC7iBFv4PEmWss4h_Ul01Mpkzgpu2GuXao",
     authDomain: "peapod-283416.firebaseapp.com",
     databaseURL: "https://peapod-283416.firebaseio.com",

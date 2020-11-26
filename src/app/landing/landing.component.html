@@ -1,3 +1,12 @@
-<p>landing works!</p>
-
-<button class="button" (click)="activateLogic()">Test logic</button>
+<ngb-carousel #carousel>
+    <ng-template ngbSlide *ngFor="let img of images; index as i" class="carousel-inner">
+        <div class="carousel-item active" style="height: 100vh; width: 100vw;">
+            <a [href]="img.link" target="_blank" rel="nofollow noopener noreferrer">
+                <img [src]="img.src" [alt]="img.desc" class="d-block w-100 h-100" style="object-fit: cover;">
+            </a>
+            <div class="carousel-caption">
+                <h3>{{img.desc}}</h3>
+            </div>
+        </div>
+    </ng-template>
+</ngb-carousel>
