@@ -1,18 +1,6 @@
 {
-  "name": "cloudponics-app",
-  "version": "1.0.0",
-  "description": "A cloud SaaS IoT dashboard, implementing Identity and Access Management for users and organizations, realtime device monitoring and management, and cloud storage.",
-  "main": "src/main.ts",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/OpenFormTech/CloudPonics-App.git"
-  },
-  "author": "JLefebvre55",
-  "license": "GPL-3.0",
-  "bugs": {
-    "url": "https://github.com/OpenFormTech/CloudPonics-App/issues"
-  },
-  "homepage": "https://github.com/OpenFormTech/CloudPonics-App#readme",
+  "name": "cloudponics",
+  "version": "0.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -27,20 +15,23 @@
     "@angular/common": "~10.2.0",
     "@angular/compiler": "~10.2.0",
     "@angular/core": "~10.2.0",
-    "@angular/fire": "^6.0.5",
+    "@angular/fire": "^6.1.1",
     "@angular/forms": "~10.2.0",
+    "@angular/localize": "~10.2.0",
     "@angular/platform-browser": "~10.2.0",
     "@angular/platform-browser-dynamic": "~10.2.0",
     "@angular/router": "~10.2.0",
-    "firebase": "^8.0.2",
-    "ngx-auth-firebaseui": "^0.1.2",
-    "node-forge": "^0.10.0",
+    "@ng-bootstrap/ng-bootstrap": "^8.0.0",
+    "bootstrap": "^4.5.3",
+    "firebase": "^8.1.1",
+    "firebaseui": "^4.7.1",
+    "firebaseui-angular": "^5.1.0",
     "rxjs": "~6.6.0",
     "tslib": "^2.0.0",
     "zone.js": "~0.10.2"
   },
   "devDependencies": {
-    "@angular-devkit/architect": ">= 0.900 < 0.1100",
+    "@angular-devkit/architect": ">= 0.900 < 0.1200",
     "@angular-devkit/build-angular": "~0.1002.0",
     "@angular/cli": "~10.2.0",
     "@angular/compiler-cli": "~10.2.0",
@@ -63,6 +54,6 @@
     "protractor": "~7.0.0",
     "ts-node": "~8.3.0",
     "tslint": "~6.1.0",
-    "typescript": "^4.0.5"
+    "typescript": "~4.0.2"
   }
 }
