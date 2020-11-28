@@ -1,7 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { NgbCarousel, NgbCarouselConfig } from '@ng-bootstrap/ng-bootstrap';
-import { AuthService } from '../services/auth.service';
-import { Router } from '@angular/router';
 import firebase from 'firebase/app';
 
 @Component({
