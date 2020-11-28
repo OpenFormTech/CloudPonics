@@ -53,27 +53,6 @@ export class AuthService {
     )
   }
 
-  // creating the google sigin in option
-  async googleSignIn(){
-    const provider = new firebase.auth.GoogleAuthProvider;
-    const credential = await this.afAuth.signInWithPopup(provider);
-    return credential.user;
-  }
-
-  // creating the github sigin in option
-  async githubSignIn(){
-    const provider = new firebase.auth.GithubAuthProvider;
-    const credential = await this.afAuth.signInWithPopup(provider);
-    return credential.user;
-  }
-
-  // creating the github sigin in option
-  async emailSignIn(){
-    const provider = new firebase.auth.EmailAuthProvider;
-    const credential = await this.afAuth.signInWithPopup(provider);
-    return credential.user;
-  }
-
   // basic sign out function
   async signOut() {
     await this.afAuth.signOut();
