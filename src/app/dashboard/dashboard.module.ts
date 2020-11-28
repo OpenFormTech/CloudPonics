@@ -17,7 +17,6 @@ const routes: Routes = [
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
-    AuthService
   ],
   exports: [
     DashboardComponent
