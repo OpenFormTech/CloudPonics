@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { NgbCarousel, NgbSlideEvent, NgbSlideEventSource, NgbCarouselConfig } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCarousel, NgbCarouselConfig } from '@ng-bootstrap/ng-bootstrap';
+import firebase from 'firebase/app';
 
 @Component({
   selector: 'app-landing',
@@ -8,6 +9,7 @@ import { NgbCarousel, NgbSlideEvent, NgbSlideEventSource, NgbCarouselConfig } fr
   providers: [NgbCarouselConfig]
 })
 export class LandingComponent implements OnInit {
+  user: firebase.User | null; // making a variable for the user
   
   constructor(config: NgbCarouselConfig) {
     // customize default values of carousels used by this component tree
