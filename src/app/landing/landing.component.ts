@@ -48,14 +48,14 @@ export class LandingComponent implements OnInit {
      * this payload is to redirect the user to the specified pages
      */
 
-    if ( this.user == null ) {
-      // if there is no user signed in, navigate to login
-      console.log("received null user, switching page");
-      this.router.navigate(['/login']);
-    } else {
+    if ( !!this.user ) {
       // if there is a user signed in, navigate to dashboard
       console.log("received null user, switching page");
       this.router.navigate(['/dashboard']);
+    } else {
+      // if there is no user signed in, navigate to login
+      console.log("received null user, switching page");
+      this.router.navigate(['/login']);
     }
   }
   
