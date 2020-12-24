@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import {CommonModule} from '@angular/common';
-import { Routes, RouterModule, Router } from '@angular/router';
+import { Routes, RouterModule } from '@angular/router';
 
 import { LandingComponent } from './landing.component';
 import { NgbCarouselModule } from '@ng-bootstrap/ng-bootstrap';
