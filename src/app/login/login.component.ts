@@ -26,11 +26,11 @@ export class LoginComponent implements OnInit {
 
       if ( !!this.user ) {
         // if there is a user signed in, navigate to dashboard
-        console.log("received an auth'd, switching page");
+        // console.log("received an auth'd, switching page");
         this.router.navigate(['/dashboard']);
       } else {
         // if there is no user signed in, do nothing
-        console.log("received null user, switching page");
+        // console.log("received null user, switching page");
       }
     });
   }
