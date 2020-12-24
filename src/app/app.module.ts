@@ -8,10 +8,16 @@ import { LoginModule } from './login/login.module';
 import { LandingModule } from './landing/landing.module';
 import { AuthService } from './services/auth.service';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { SidebarComponent } from './dash/sidebar/sidebar.component';
+import { NavbarComponent } from './dash/navbar/navbar.component';
+import { WidgetspaceComponent } from './dash/widgetspace/widgetspace.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    SidebarComponent,
+    NavbarComponent,
+    WidgetspaceComponent
   ],
   imports: [
     BrowserModule,
