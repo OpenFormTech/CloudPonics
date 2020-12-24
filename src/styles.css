@@ -1,2 +1,23 @@
 /* You can add global styles to this file, and also import other style files */
 @import '~firebaseui/dist/firebaseui.css';
+
+* {
+    --bg-color: #f3f3f3;
+}
+
+body {
+    background-color: var(--bg-color);
+}
+
+noscript {
+    font-size: 2rem;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: black;
+    display: block;
+    text-align: center;
+    height: 100%;
+}
+
+noscript span {
+    height: 5rem;
+}
