@@ -1,1 +1,9 @@
-<p>navbar works!</p>
+<div style="margin:0.25rem;background-color:var(--widget-color);border-radius:1rem;padding:1rem;height:calc(100% - 0.25rem);">
+
+    <div *ngIf="auth.user$ | async as user">
+        <p>Welcome {{user.displayName}}.</p>
+    </div>
+    
+    <button class="button" (click)="auth.signOut()">Sign Out</button>    
+
+</div>
