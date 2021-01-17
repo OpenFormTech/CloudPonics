@@ -10,6 +10,7 @@ export class WidgetspaceComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
+    console.log("widgetspace initialized");
   }
 
 }

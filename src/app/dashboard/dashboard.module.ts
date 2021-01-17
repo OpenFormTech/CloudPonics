@@ -2,9 +2,9 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DashboardComponent } from './dashboard.component';
 import { Routes, RouterModule } from '@angular/router';
-import { NavbarComponent } from '../dash/navbar/navbar.component';
-import { SidebarComponent } from '../dash/sidebar/sidebar.component';
-import { WidgetspaceModule } from '../dash/widgetspace/widgetspace.module';
+import { NavbarComponent } from './navbar/navbar.component';
+import { SidebarComponent } from './sidebar/sidebar.component';
+import { WidgetspaceModule } from './widgetspace/widgetspace.module';
 
 const routes: Routes = [
   { path: '', component: DashboardComponent },
@@ -22,8 +22,7 @@ const routes: Routes = [
     WidgetspaceModule,
     RouterModule.forChild(routes),
   ],
-  exports: [
-    DashboardComponent
-  ]
+  exports: [DashboardComponent],
+  bootstrap: [DashboardComponent]
 })
 export class DashboardModule { }
