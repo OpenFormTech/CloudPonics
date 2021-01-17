@@ -1,0 +1,29 @@
+#dashboard-container{
+    width: 100%;
+    height: 100%;
+    
+    font-size: 1.25rem;
+
+    display: grid;
+    grid-template-columns: [first] 11rem [second] auto;
+    grid-template-rows: [row1] 11rem [row2] auto;
+    justify-items: stretch;
+}
+
+app-navbar{
+    background-color: var(--bg-color);
+    grid-column: second;
+    grid-row: row1 / row2;
+}
+
+app-sidebar{
+    background-color: var(--bg-color);
+    grid-column: first / second;
+    grid-row: row1 / span 2;
+}
+
+app-widgetspace{
+    background-color: var(--bg-color);
+    grid-column: second;
+    grid-row: row2;
+}
