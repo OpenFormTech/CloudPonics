@@ -46,3 +46,7 @@ testem.log
 Thumbs.db
 .code-workspace
 .editorconfig
+
+# Fuck package lock
+
+package-lock.json

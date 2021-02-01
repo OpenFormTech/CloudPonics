@@ -84,6 +84,60 @@
             },
             "projects" : {
                 "project-uuid" : true
+            },
+            "preferences" : {
+                "dashboard" : {
+                    "widgets" : {
+                        "charts" : {
+                            "chart-id" : {
+                                "config" : {
+                                        "type": "line",
+                                        "data": {
+                                            "labels": ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+                                            "datasets": [{
+                                                "label": "Cubic interpolation (monotone)",
+                                                "backgroundColor": "rgba(0, 0, 0, 0)",
+                                                "fill": false,
+                                                "cubicInterpolationMode": "monotone"
+                                            }]
+                                        },
+                                        "options": {
+                                            "responsive": true,
+                                            "title": {
+                                                "display": true,
+                                                "text": "Chart.js Line Chart - Cubic interpolation mode"
+                                            },
+                                            "tooltips": {
+                                                "mode": "index"
+                                            },
+                                            "scales": {
+                                                "xAxes": [{
+                                                    "display": true,
+                                                    "scaleLabel": {
+                                                        "display": true
+                                                    }
+                                                }],
+                                                "yAxes": [{
+                                                    "display": true,
+                                                    "scaleLabel": {
+                                                        "display": true,
+                                                        "labelString": "Value"
+                                                    },
+                                                    "ticks": {
+                                                        "suggestedMin": -10,
+                                                        "suggestedMax": 200
+                                                    }
+                                                }]
+                                            }
+                                        }
+                                    },
+                                "project" : "project-uuid",
+                                "run" : "run-uuid",
+                                "label" : "dataset-label"
+                            }
+                        }
+                    }
+                }
             }
         }
     }

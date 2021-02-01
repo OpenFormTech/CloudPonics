@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { WidgetspaceComponent } from './widgetspace.component';
 import { ChartwidgetComponent } from './chartwidget/chartwidget.component';
 import { WidgetdirectiveDirective } from './widgetdirective.directive';
+import { ChartsModule } from 'ng2-charts';
 
 @NgModule({
   declarations: [
@@ -9,7 +10,9 @@ import { WidgetdirectiveDirective } from './widgetdirective.directive';
     ChartwidgetComponent, 
     WidgetdirectiveDirective,
   ],
-  imports: [],
+  imports: [
+    ChartsModule
+  ],
   exports: [
     WidgetspaceComponent
   ]
