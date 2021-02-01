@@ -17,7 +17,7 @@ export class ChartwidgetComponent implements OnInit {
   }
 
   async makeChart(): Promise<void> {
-    await new Promise(r => setTimeout(r, 200));
+    await new Promise(r => setTimeout(r, 0.1));
     this.ctx = document.getElementById(this.canvasid);
     console.log(this.ctx);
     this.chart = new Chart(this.ctx, {
@@ -61,5 +61,4 @@ export class ChartwidgetComponent implements OnInit {
   ngOnInit(): void {
     this.makeChart();
   }
-
 }
