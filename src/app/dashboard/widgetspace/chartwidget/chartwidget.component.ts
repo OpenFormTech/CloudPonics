@@ -16,25 +16,11 @@ export class ChartwidgetComponent implements OnInit {
     this.canvasid = Math.random().toString(20).substr(2, 10);
   }
 
-  // async acquireCanvasElement(): Promise<HTMLElement | void> {
-  //   let r;
-
-  //   for (let i = 0; i < 5; i++) {
-  //     r = document.getElementById(this.canvasid);
-  //     if (r === null) {
-  //       await new Promise(r => setTimeout(r, 2000));
-  //     } else {
-  //       break;
-  //     }
-  //   }
-
-  //   return r;
-  // }
-
   async makeChart(): Promise<void> {
     await new Promise(r => setTimeout(r, 200));
     this.ctx = document.getElementById(this.canvasid);
-    this.chart = new Chart(this.canvasid, {
+    console.log(this.ctx);
+    this.chart = new Chart(this.ctx, {
         type: 'bar',
         data: {
             labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
