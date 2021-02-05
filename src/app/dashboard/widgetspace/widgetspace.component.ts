@@ -37,22 +37,22 @@ export class WidgetspaceComponent implements OnInit {
     // What should the chart look like?
 
     // TODO: GET USER CHART PREF LIST<ChartOptions>, etc. FROM DATABASE 
-    var chart1pref : ChartOptions = {
+    var timeChart : ChartOptions = {
       scales: {
         xAxes: [{
-            type: 'time',
-            time: {
-              displayFormats: {
-                hour: "h:mm a"
-              },
-              unit: "hour",
+          type: 'time',
+          time: {
+            displayFormats: {
+              hour: "h:mm a"
             },
-            distribution: "linear"
+            unit: "hour",
+          },
+          distribution: "linear"
         }],
       }
     };
 
-    var chart1color : Color = { // grey
+    var grayChartColor : Color = { // grey
       backgroundColor: 'rgba(148,159,177,0.2)',
       borderColor: 'rgba(148,159,177,1)',
       pointBackgroundColor: 'rgba(148,159,177,1)',
@@ -61,23 +61,30 @@ export class WidgetspaceComponent implements OnInit {
       pointHoverBorderColor: 'rgba(148,159,177,0.8)'
     };
 
-    var database1: dbConfig = {
+    var airTemp: dbConfig = {
       project : "project-uuid",
       run : "run-uuid",
       label : "air-temperature"
     };
 
+    var waterLevel: dbConfig = airTemp;
+    waterLevel.label = "water-level";
+
     // assembling the preferences to be inputted to each chart widget
     var prefs: UserPreferences[] = [
       {
-        chartOptions : chart1pref,
-        chartColor : chart1color,
-        databaseConfig : database1
+        chartOptions : timeChart,
+        chartColor : grayChartColor,
+        databaseConfig : airTemp,
+        chartType: "scatter",
+        dataDelimiter: 10
       },
       {
-        chartOptions : chart1pref,
-        chartColor : chart1color,
-        databaseConfig : database1
+        chartOptions : timeChart,
+        chartColor : grayChartColor,
+        databaseConfig : waterLevel,
+        chartType: "line",
+        dataDelimiter: 10
       }
     ];
 
@@ -90,6 +97,8 @@ export class WidgetspaceComponent implements OnInit {
       widget.chartOptions = pref.chartOptions;
       widget.databaseConfig = pref.databaseConfig;
       widget.chartColor = pref.chartColor;
+      widget.dataDelimiter = pref.dataDelimiter;
+      widget.chartType = pref.chartType;
     }
   }
 }

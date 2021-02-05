@@ -5,6 +5,7 @@ import { Color, BaseChartDirective, Label } from 'ng2-charts';
 import { ChartDataSets, ChartOptions, ChartType, ChartPoint } from 'chart.js';
 import 'firebase/firestore';
 import * as moment from 'moment';
+import { dbConfig } from '../widgetspace.interface';
 
 interface DataPoint {
   timestamp: firebase.default.firestore.Timestamp;
@@ -19,12 +20,12 @@ interface DataPoint {
 export class ChartwidgetComponent implements OnInit{
 
   // Input-Populated (User settings)
-  @Input() databaseConfig;                    // angular firestore db reference
-  @Input() chartType: ChartType = 'scatter';  // chart type
+  @Input() databaseConfig: dbConfig;          // angular firestore db reference
+  @Input() chartType: ChartType;  // chart type
   @Input() chartOptions : ChartOptions;       // chart options
   @Input() chartLegend = true;                // chart legend input
   @Input() chartColor : Color;                // chart color
-  @Input() length : number = 10;              // limiting the amount of data points to pull
+  @Input() dataDelimiter : number;       // limiting the amount of data points to pull
 
   // Database-Populated (from data)
   public chartData: ChartDataSets = {};
@@ -44,7 +45,7 @@ export class ChartwidgetComponent implements OnInit{
     this.auth.getUser().then(user=>{
       // CREATE LISTENER w/ CUSTOM QUERY
       this.dataref = this.db.collection<DataPoint>('projects/'+this.databaseConfig.project+'/runs/'+this.databaseConfig.run+'/'+this.databaseConfig.label, collection=>{
-        return collection.orderBy('timestamp').limitToLast(this.length);
+        return collection.orderBy('timestamp').limitToLast(this.dataDelimiter);
       });
 
       // CHART CONFIG
