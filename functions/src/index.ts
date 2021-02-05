@@ -51,7 +51,7 @@ exports.environmentData = functions.pubsub.topic('data').onPublish(async (messag
         if(runcache[data.project][data.run].device === null){
             console.log('Binding device "'+device+'" to run "'+data.run+'/'+data.project+'".');
             runcache[data.project][data.run].device = device;
-            await admin.firestore().doc('/projects/'+data.project+'/runs/'+data.run+'/').update({device: device});
+            await admin.firestore().doc('/projects/'+data.project+'/runs/'+data.run).update({device: device});
         } else if(runcache[data.project][data.run].device === device){
             console.info('Recieved device data successfully from "'+device+'": '+data.label+' - '+data.value);
             return admin.firestore().collection('/projects/'+data.project+'/runs/'+data.run+'/'+data.label).add({
@@ -71,7 +71,7 @@ exports.environmentData = functions.pubsub.topic('data').onPublish(async (messag
  */
 exports.newUser = functions.auth.user().onCreate((user, context)=>{
     const name = user.displayName || user.email;
-    console.log('New user '+name+' (UID: '+user.uid+') has authenticated at time '+context.timestamp);
+    console.log('New user "'+name+'" (UID: "'+user.uid+'") has authenticated at time '+context.timestamp);
     return [admin.firestore().doc('users/'+user.uid).set(admin.firestore().doc('users/default')),admin.firestore().doc('/users/'+user.uid).update({
         timestamp : FirebaseFirestore.FieldValue.serverTimestamp()
     })];
@@ -118,65 +118,67 @@ exports.createDevice = functions.https.onCall(async (data : {name: string, reque
 });
 
 /**
-* Populates program metadata (owner, creation timestamp), user program ownership, and parent project's program shortlist on program creation.
+* Populates project metadata (owner, creation timestamp) and user project ownership on project creation.
 */
-exports.programCreation = functions.database.ref('/projects/{projectid}/programs/{programid}/').onCreate((snapshot, context)=>{
+exports.projectCreation = functions.firestore.document('/projects/{projectid}/').onCreate((snapshot, context)=>{
     const projectid = String(context.params.projectid);
-    const programid = String(context.params.programid);
     const uid = context.auth?.uid;
     const timestamp = context.timestamp;
-    console.log('Program '+programid+' has been created in project '+projectid+' by user '+uid+' at time '+timestamp);
+    const userdoc = admin.firestore().doc('/users/'+context.auth?.uid);
+    console.log('Project "'+projectid+'" has been created by user "'+uid+'" at time '+timestamp);
     //Metadata
-    const p1 = snapshot.ref.child('metadata').set({
-        'owner' : uid,
+    const p1 = snapshot.ref.update({
+        'owner' : userdoc,
         'timestamp' : FirebaseFirestore.FieldValue.serverTimestamp()
     });
-    //User reflection
-    const p2 = admin.database().ref('/users/'+uid+'/programs/'+programid).set(projectid);
-    //Shortlist reflection
-    const p3 = admin.database().ref('/projects/'+projectid+'/programlist/'+programid).set(true);
-    return Promise.all([p1,p2,p3]);
+    //User ownership
+    const p2 = userdoc.update({
+        projects: FirebaseFirestore.FieldValue.arrayUnion(snapshot.ref)
+    });
+    return Promise.all([p1,p2]);
 });
 
 /**
-* Populates run metadata (owner, creation timestamp), user run ownership, and parent project's run shortlist on run creation.
+* Populates run metadata (owner, creation timestamp) and user run ownership on run creation.
 */
-exports.runCreation = functions.database.ref('/projects/{projectid}/runs/{runid}/').onCreate((snapshot, context)=>{
+exports.runCreation = functions.firestore.document('/projects/{projectid}/runs/{runid}/').onCreate((snapshot, context)=>{
     const projectid = String(context.params.projectid);
     const runid = String(context.params.runid);
     const uid = context.auth?.uid;
     const timestamp = context.timestamp;
-    console.log('Run '+runid+' has been created in project '+projectid+' by user '+uid+' at time '+timestamp);
+    const userdoc = admin.firestore().doc('/users/'+uid);
+    console.log('Run "'+projectid+'/'+runid+'" has been by user "'+uid+'" at time '+timestamp);
     //Metadata
-    const p1 = snapshot.ref.child('metadata').set({
-        'owner' : uid,
+    const p1 = snapshot.ref.update({
+        'owner' : userdoc,
         'timestamp' : FirebaseFirestore.FieldValue.serverTimestamp()
     });
-    //User reflection
-    const p2 = admin.database().ref('/users/'+uid+'/runs/'+runid).set(projectid);
-    //Shortlist reflection
-    const p3 = admin.database().ref('/projects/'+projectid+'/runlist/'+runid).set(true);
-    return Promise.all([p1,p2,p3]);
+    //User ownership
+    const p2 = userdoc.update({
+        runs: FirebaseFirestore.FieldValue.arrayUnion(snapshot.ref)
+    });
+    return Promise.all([p1,p2]);
 });
 
 /**
-* Populates project metadata (owner, creation timestamp), user project ownership, and project shortlist on project creation.
+* Populates program metadata (owner, creation timestamp) and user program ownership on program creation.
 */
-exports.projectCreation = functions.database.ref('/projects/{projectid}/').onCreate((snapshot, context)=>{
+exports.programCreation = functions.database.ref('/projects/{projectid}/programs/{programid}/').onCreate((snapshot, context)=>{
+    // TODO: Check for field completeness? Interface?
     const projectid = String(context.params.projectid);
+    const programid = String(context.params.programid);
     const uid = context.auth?.uid;
     const timestamp = context.timestamp;
-    console.log('Project '+projectid+' has been created by user '+uid+' at time '+timestamp);
+    const userdoc = admin.firestore().doc('/users/'+uid);
+    console.log('Program "'+programid+'" for project "'+projectid+'" has been created by user "'+uid+'" at time '+timestamp);
     //Metadata
     const p1 = snapshot.ref.child('metadata').set({
-        'owner' : uid,
+        'owner' : userdoc,
         'timestamp' : FirebaseFirestore.FieldValue.serverTimestamp()
     });
     //User reflection
-    const p2 = admin.database().ref('/users/'+uid+'/projects/'+projectid).set(true);
-    //Shortlist reflection
-    const p3 = admin.database().ref('/projectlist/'+projectid).set(true);
-    //Update cloud functions cache
-    // const p4 = updateProjectListCache();
-    return Promise.all([p1,p2,p3]);
+    const p2 = userdoc.update({
+        programs: FirebaseFirestore.FieldValue.arrayUnion(snapshot.ref)
+    });
+    return Promise.all([p1,p2]);
 });
