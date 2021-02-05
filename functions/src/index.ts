@@ -36,15 +36,12 @@ exports.environmentData = functions.pubsub.topic('data').onPublish(async (messag
     const device : string = message.attributes['deviceId'];
     //Destination project & run exists?
     if((await admin.firestore().doc('/projects/'+data.project).get()).exists) {
-        var rundoc : IRunDocCache;
         // Check for cache
-        if(runcache[data.project][data.run]){
-            rundoc = runcache[data.project][data.run];
-        } else {
+        if(!runcache[data.project][data.run]){
             // Create cache if exists, otherwise fail
             const runref = await admin.firestore().doc('/projects/'+data.project+'/runs/'+data.run).get();
             if(runref.exists){
-                runcache[data.project][data.run] = rundoc = {
+                runcache[data.project][data.run] = {
                     device: runref.get("device"),
                     timestamp: runref.get("timestamp")
                 };
@@ -53,10 +50,11 @@ exports.environmentData = functions.pubsub.topic('data').onPublish(async (messag
                 return;
             }
         }
-        if(rundoc.device === null){
+        if(runcache[data.project][data.run].device === null){
             console.log('Binding device "'+device+'" to run "'+data.run+'/'+data.project+'".');
+            runcache[data.project][data.run].device = device;
             await admin.firestore().doc('/projects/'+data.project+'/runs/'+data.run+'/').update({device: device})
-        } else if(device === device){
+        } else if(runcache[data.project][data.run].device === device){
             console.info('Recieved device data successfully from "'+device+'": '+data.label+' - '+data.value);
             admin.database().ref('/projects/'+data.project+'/runs/'+data.run+'/data/'+data.label).push({
                 timestamp : data.timestamp,
