@@ -2,11 +2,14 @@
 @import '~firebaseui/dist/firebaseui.css';
 
 * {
-    --bg-color: #f3f3f3;
+    --bg-color: #f1f1f1;
+    --widget-color: #fafafa;
 }
 
 body {
     background-color: var(--bg-color);
+    height: 100vh;
+    width: 100vw;
 }
 
 noscript {

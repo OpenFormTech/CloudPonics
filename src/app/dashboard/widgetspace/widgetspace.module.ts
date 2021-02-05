@@ -1,20 +1,17 @@
 import { NgModule } from '@angular/core';
-// import { Routes, RouterModule } from '@angular/router';
 import { WidgetspaceComponent } from './widgetspace.component';
-
-// Leaving the path empty will overwrite dashboardComponent with WidgetspaceComponent
-// const routes: Routes = [
-//   {
-//     path: '',
-//     component: WidgetspaceComponent,
-//   },
-// ];
+import { ChartwidgetComponent } from './chartwidget/chartwidget.component';
+import { WidgetdirectiveDirective } from './widgetdirective.directive';
+import { ChartsModule } from 'ng2-charts';
 
 @NgModule({
-  declarations: [WidgetspaceComponent],
+  declarations: [
+    WidgetspaceComponent, 
+    ChartwidgetComponent, 
+    WidgetdirectiveDirective,
+  ],
   imports: [
-    // Leaving the path empty will overwrite dashboardComponent with WidgetspaceComponent
-    // RouterModule.forChild(routes),
+    ChartsModule
   ],
   exports: [
     WidgetspaceComponent

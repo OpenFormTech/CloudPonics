@@ -69,4 +69,12 @@ export class AuthService {
 
     return l;
   }
+
+  async getUser(): Promise<firebase.User> {
+    return new Promise<firebase.User>(result=>{
+      this.listenForUser(user => {
+        result(user);
+      });
+    });
+  }
 }

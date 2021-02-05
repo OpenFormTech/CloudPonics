@@ -8,7 +8,7 @@
 /bazel-out
 
 # dependencies
-/node_modules
+node_modules/
 
 # profiling files
 chrome-profiler-events*.json
@@ -46,3 +46,7 @@ testem.log
 Thumbs.db
 .code-workspace
 .editorconfig
+
+# Fuck package lock
+
+package-lock.json

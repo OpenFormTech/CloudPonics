@@ -1,10 +1,7 @@
-<div *ngIf="auth.user$ | async as user">
-    <p>Welcome {{user.displayName}}.</p>
-</div>
+<section id="dashboard-container">
+    <!-- this is to contain the grid -->
+    <app-navbar></app-navbar>
+    <app-sidebar></app-sidebar>
+    <app-widgetspace></app-widgetspace>
 
-<button class="button" (click)="auth.signOut()">Sign Out</button>
-<hr>
-<p>testing</p>
-<app-navbar></app-navbar>
-<app-sidebar></app-sidebar>
-<app-widgetspace></app-widgetspace>
+</section>
