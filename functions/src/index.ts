@@ -85,15 +85,13 @@ exports.createDevice = functions.https.onCall(async (data : {name: string, reque
         admin.firestore().doc('users/'+context.auth.uid).get().then(async userdoc=>{
             // Check user device registry limit
             if((userdoc.get('devices') as Array<any>).length >= userdoc.get('devicelimit')){
-                reject(new functions.https.HttpsError('resource-exhausted', "Failed to register device: Account device registration limit exceeded. Your limit is "+userdoc.get('devicelimit')+" device(s)."));
-                return;
+                return new functions.https.HttpsError('resource-exhausted', "Failed to register device: Account device registration limit exceeded. Your limit is "+userdoc.get('devicelimit')+" device(s).");
             }
             try {
 
                 var response = await deviceManagerClient.createDevice(data.request);
             } catch (err){
-                reject(new functions.https.HttpsError('invalid-argument', "Failed to register device: "+String(err)))
-                return;
+                return new functions.https.HttpsError('invalid-argument', "Failed to register device: "+String(err));
             }
             try{
                 console.log('User '+context.auth?.uid+' created device: ', response[0]);
