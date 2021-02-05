@@ -1,6 +1,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { DeviceManagerClient } from '@google-cloud/iot';
+import { HttpsFunction } from 'firebase-functions';
 
 const deviceManagerClient : DeviceManagerClient = new DeviceManagerClient();
 
@@ -53,10 +54,10 @@ exports.environmentData = functions.pubsub.topic('data').onPublish(async (messag
         if(runcache[data.project][data.run].device === null){
             console.log('Binding device "'+device+'" to run "'+data.run+'/'+data.project+'".');
             runcache[data.project][data.run].device = device;
-            await admin.firestore().doc('/projects/'+data.project+'/runs/'+data.run+'/').update({device: device})
+            await admin.firestore().doc('/projects/'+data.project+'/runs/'+data.run+'/').update({device: device});
         } else if(runcache[data.project][data.run].device === device){
             console.info('Recieved device data successfully from "'+device+'": '+data.label+' - '+data.value);
-            admin.database().ref('/projects/'+data.project+'/runs/'+data.run+'/data/'+data.label).push({
+            return admin.firestore().collection('/projects/'+data.project+'/runs/'+data.run+'/'+data.label).add({
                 timestamp : data.timestamp,
                 value : data.value
             });
@@ -66,6 +67,17 @@ exports.environmentData = functions.pubsub.topic('data').onPublish(async (messag
     } else {
         console.error('No destination project "'+message.json.project+'" exists.', message);
     }
+});
+
+/**
+ * Generates user database entry on user creation
+ */
+exports.newUser = functions.auth.user().onCreate((user, context)=>{
+    const name = user.displayName || user.email;
+    console.log('New user '+name+' (UID: '+user.uid+') has authenticated at time '+context.timestamp);
+    return [admin.firestore().doc('users/'+user.uid).set(admin.firestore().doc('users/default')),admin.firestore().doc('/users/'+user.uid).update({
+        timestamp:Date.parse(context.timestamp)
+    })];
 });
 
 /**
@@ -167,15 +179,4 @@ exports.projectCreation = functions.database.ref('/projects/{projectid}/').onCre
     //Update cloud functions cache
     const p4 = updateProjectListCache();
     return Promise.all([p1,p2,p3,p4]);
-});
-
-exports.newUser = functions.auth.user().onCreate((user, context)=>{
-    let name;
-    if(user.displayName !== null){
-        name = user.displayName;
-    } else {
-        name = user.email;
-    }
-    console.log('New user '+user.displayName+' (UID: '+user.uid+') has authenticated at time '+context.timestamp);
-    return admin.database().ref('/users/'+user.uid+'/creation-timestamp').set(Date.parse(context.timestamp));
 });
