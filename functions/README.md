@@ -17,3 +17,11 @@ Routes data from [IoT devices](https://github.com/OpenFormTech/PeaPod) to the ri
 See `IData` interface for data structure.
 
 > Note: timestamp is `ms` UTC.
+
+# New User
+
+Populates user object on new user authentication. Copies defaults from `users/default`, then adds this user's specific field values.
+
+# Device Registry
+
+Checks user registry limits, then registers a new [IoT device](https://github.com/OpenFormTech/PeaPod) to the GCP IoT Core registry. Populates user device list (`users/uid/devices`), as well as devices list (`devices/deviceid`) with device fields (i.e. name, timestamp).

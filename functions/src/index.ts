@@ -73,7 +73,7 @@ exports.newUser = functions.auth.user().onCreate((user, context)=>{
     const name = user.displayName || user.email;
     console.log('New user '+name+' (UID: '+user.uid+') has authenticated at time '+context.timestamp);
     return [admin.firestore().doc('users/'+user.uid).set(admin.firestore().doc('users/default')),admin.firestore().doc('/users/'+user.uid).update({
-        timestamp : context.timestamp
+        timestamp : FirebaseFirestore.FieldValue.serverTimestamp()
     })];
 });
 
@@ -100,7 +100,7 @@ exports.createDevice = functions.https.onCall(async (data : {name: string, reque
                 await deviceref.set({
                     'name' : data.name,
                     'state' : 0,
-                    'creation-timestamp' : FirebaseFirestore.FieldValue.serverTimestamp(),
+                    'timestamp' : FirebaseFirestore.FieldValue.serverTimestamp(),
                     'owner' : admin.firestore().doc('/users/'+context.auth?.uid)
                 });
                 // Add to user
@@ -129,7 +129,7 @@ exports.programCreation = functions.database.ref('/projects/{projectid}/programs
     //Metadata
     const p1 = snapshot.ref.child('metadata').set({
         'owner' : uid,
-        'creation-timestamp' : Date.parse(timestamp)
+        'timestamp' : FirebaseFirestore.FieldValue.serverTimestamp()
     });
     //User reflection
     const p2 = admin.database().ref('/users/'+uid+'/programs/'+programid).set(projectid);
@@ -150,7 +150,7 @@ exports.runCreation = functions.database.ref('/projects/{projectid}/runs/{runid}
     //Metadata
     const p1 = snapshot.ref.child('metadata').set({
         'owner' : uid,
-        'creation-timestamp' : FirebaseFirestore.FieldValue.serverTimestamp()
+        'timestamp' : FirebaseFirestore.FieldValue.serverTimestamp()
     });
     //User reflection
     const p2 = admin.database().ref('/users/'+uid+'/runs/'+runid).set(projectid);
@@ -170,7 +170,7 @@ exports.projectCreation = functions.database.ref('/projects/{projectid}/').onCre
     //Metadata
     const p1 = snapshot.ref.child('metadata').set({
         'owner' : uid,
-        'creation-timestamp' : FirebaseFirestore.FieldValue.serverTimestamp()
+        'timestamp' : FirebaseFirestore.FieldValue.serverTimestamp()
     });
     //User reflection
     const p2 = admin.database().ref('/users/'+uid+'/projects/'+projectid).set(true);
