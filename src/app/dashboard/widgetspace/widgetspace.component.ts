@@ -2,7 +2,8 @@ import { Component, OnInit, ComponentFactoryResolver, ViewChild, Injector } from
 import { WidgetdirectiveDirective } from './widgetdirective.directive';
 import { ChartwidgetComponent } from './chartwidget/chartwidget.component';
 import { ChartOptions } from 'chart.js';
-import { Color } from 'ng2-charts'
+import { Color } from 'ng2-charts';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-widgetspace',
@@ -36,18 +37,19 @@ export class WidgetspaceComponent implements OnInit {
     // What should the chart look like?
 
     // TODO: GET USER CHART PREF LIST<ChartOptions>, etc. FROM DATABASE 
+    var time_format = "MMM D h:mm a";
+
     var chart1pref : ChartOptions = {
       "scales": {
           xAxes: [{
-              "type": 'linear',
-              // // "display": true,
-              // // "scaleLabel": {
-              // //     "display": true
-              // // },
-              "time": {
-                "unit": 'hour',
-                // "stepSize": 6
+              type: 'time',
+              time: {
+                displayFormats: {
+                  hour: "h:mm a"
+                },
+                unit: "hour",
               },
+              distribution: "linear"
           }],
       }
     };
@@ -71,6 +73,11 @@ export class WidgetspaceComponent implements OnInit {
         chartOptions : chart1pref,
         chartColor : chart1color,
         databaseConfig : database1
+      },
+      {
+        chartOptions : chart1pref,
+        chartColor : chart1color,
+        databaseConfig : database1
       }
     ];
 
@@ -82,6 +89,7 @@ export class WidgetspaceComponent implements OnInit {
       widget.chartOptions = pref.chartOptions;
       widget.databaseConfig = pref.databaseConfig;
       widget.chartColor = pref.chartColor;
+      widget.timeparser = time_format;
     }
   }
 }

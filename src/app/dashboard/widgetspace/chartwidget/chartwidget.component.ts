@@ -19,20 +19,19 @@ interface DataPoint {
 export class ChartwidgetComponent implements OnInit{
 
   // Input-Populated (User settings)
-  @Input() databaseConfig;
-  @Input() chartType: ChartType = 'scatter';
-  @Input() chartOptions : ChartOptions;
-  @Input() chartLegend = true;
-  @Input() chartColor : Color;
-  @Input() length : number = 10;
+  @Input() databaseConfig;                    // angular firestore db reference
+  @Input() chartType: ChartType = 'scatter';  // chart type
+  @Input() chartOptions : ChartOptions;       // chart options
+  @Input() chartLegend = true;                // chart legend input
+  @Input() chartColor : Color;                // chart color
+  @Input() length : number = 10;              // limiting the amount of data points to pull
+  @Input() timeparser : string;               // the parser for moment.js
 
   // Database-Populated (from data)
   public chartData: ChartDataSets = {};
-  public chartLabel: Label = 'Label';
 
   // Internal
   private dataref : AngularFirestoreCollection<DataPoint>;
-  // private mintime : number = 0;
   @ViewChild(BaseChartDirective, { static: true }) chart: BaseChartDirective;
 
   constructor(private db : AngularFirestore, private auth: AuthService) { 
@@ -41,6 +40,7 @@ export class ChartwidgetComponent implements OnInit{
   }
 
   ngOnInit(): void {
+
     // GET USER
     this.auth.getUser().then(user=>{
       // CREATE LISTENER w/ CUSTOM QUERY
@@ -50,23 +50,23 @@ export class ChartwidgetComponent implements OnInit{
 
       // CHART CONFIG
       this.chartData.label = this.databaseConfig.label;
-      console.log(this.chartData.data);
+      this.chartData.data = [];
 
       // BUILD QUERY-DATA SUBSCRIPTION
       this.dataref.snapshotChanges(['added']).subscribe(datapoints => {
+        // takings all the data points and mapping them to usable chart data
         (this.chartData.data as ChartPoint[]) = datapoints.map(datapoint => {
           const data = datapoint.payload.doc.data();
-          console.log(data);
-          // this.mintime = Math.min(this.mintime, data.timestamp.toMillis());
+          // console.log(data);
+
           return {
-            x : moment.utc(data.timestamp.toMillis()),
+            x : moment.utc(data.timestamp.toMillis()).local(true),
             y : data.value
           };
         });
 
-        console.log(this.chartData.data);
+        // console.log(this.chartData.data);
         // Refresh the chart
-        // this.chart.options.scales.xAxes[0].time.min = String(this.mintime);
         this.chart.update();
       });
     });
