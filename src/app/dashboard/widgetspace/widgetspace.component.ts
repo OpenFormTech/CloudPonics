@@ -64,7 +64,7 @@ export class WidgetspaceComponent implements OnInit {
     var database1 = {
       "project" : "project-uuid",
       "run" : "run-uuid",
-      "label" : "dataset-label"
+      "label" : "air-temperature"
     };
     var prefs = [
       {
