@@ -67,8 +67,11 @@ export class WidgetspaceComponent implements OnInit {
       label : "air-temperature"
     };
 
-    var waterLevel: dbConfig = airTemp;
-    waterLevel.label = "water-level";
+    var waterLevel: dbConfig = {
+      project : "project-uuid",
+      run : "run-uuid",
+      label : "water-level"
+    };
 
     // assembling the preferences to be inputted to each chart widget
     var prefs: UserPreferences[] = [
