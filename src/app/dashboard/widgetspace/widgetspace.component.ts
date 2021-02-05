@@ -36,21 +36,33 @@ export class WidgetspaceComponent implements OnInit {
     // Where can it get it?
     // What should the chart look like?
 
-    // TODO: GET USER CHART PREF LIST<ChartOptions>, etc. FROM DATABASE 
-    var timeChart : ChartOptions = {
-      scales: {
-        xAxes: [{
-          type: 'time',
-          time: {
-            displayFormats: {
-              hour: "h:mm a"
+    function chartOptionsBuilder(units: string, yaxisname: string): ChartOptions {
+      let t: ChartOptions = {
+        scales: {
+          xAxes: [{
+            type: 'time',
+            time: {
+              displayFormats: {
+                hour: "h:mm a"
+              },
+              unit: "hour",
             },
-            unit: "hour",
-          },
-          distribution: "linear"
-        }],
-      }
-    };
+            distribution: "linear"
+          }],
+          yAxes: [{
+            type: 'linear',
+            scaleLabel: {
+              display: true,
+              labelString: `${yaxisname} (${units})`
+            }
+          }]
+        }
+      };
+
+      return t;
+    }
+
+    // TODO: GET USER CHART PREF LIST<ChartOptions>, etc. FROM DATABASE 
 
     var grayChartColor : Color = { // grey
       backgroundColor: 'rgba(148,159,177,0.2)',
@@ -76,14 +88,14 @@ export class WidgetspaceComponent implements OnInit {
     // assembling the preferences to be inputted to each chart widget
     var prefs: UserPreferences[] = [
       {
-        chartOptions : timeChart,
+        chartOptions : chartOptionsBuilder("kPa", "Air Pressure"),
         chartColor : grayChartColor,
         databaseConfig : airTemp,
         chartType: "scatter",
         dataDelimiter: 10
       },
       {
-        chartOptions : timeChart,
+        chartOptions : chartOptionsBuilder("ml", "Water Level"),
         chartColor : grayChartColor,
         databaseConfig : waterLevel,
         chartType: "line",
