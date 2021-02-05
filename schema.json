@@ -54,6 +54,7 @@
     },
     "users" : {
         "user-uuid" : {
+            "devicelimit": 1,
             "devices" : {
                 "device-uuid" : true
             },

@@ -1,9 +1,8 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { DeviceManagerClient } from '@google-cloud/iot';
-import { HttpsFunction } from 'firebase-functions';
+import * as iot from '@google-cloud/iot';
 
-const deviceManagerClient : DeviceManagerClient = new DeviceManagerClient();
+const deviceManagerClient : iot.v1.DeviceManagerClient = new iot.v1.DeviceManagerClient();
 
 admin.initializeApp();
 
@@ -14,7 +13,6 @@ interface IData {
     project : string
     run : string
 };
-
 
 interface IRunDocCache {
     device: string,
@@ -47,8 +45,7 @@ exports.environmentData = functions.pubsub.topic('data').onPublish(async (messag
                     timestamp: runref.get("timestamp")
                 };
             } else {
-                console.error('No destination run "'+data.run+'/'+data.project+'" exists.', message);
-                return;
+                return new Error('No destination run "'+data.run+'/'+data.project+'" exists.'), message;
             }
         }
         if(runcache[data.project][data.run].device === null){
@@ -62,10 +59,10 @@ exports.environmentData = functions.pubsub.topic('data').onPublish(async (messag
                 value : data.value
             });
         } else {
-            console.error('Incorrect device ID "'+device+'" for run "'+data.run+'", expected "'+device+'"', message);
+            return new Error('Incorrect device ID "'+device+'" for run "'+data.run+'", expected "'+device+'"'), message;
         }
     } else {
-        console.error('No destination project "'+message.json.project+'" exists.', message);
+        return new Error('No destination project "'+message.json.project+'" exists.'), message;
     }
 });
 
@@ -76,45 +73,50 @@ exports.newUser = functions.auth.user().onCreate((user, context)=>{
     const name = user.displayName || user.email;
     console.log('New user '+name+' (UID: '+user.uid+') has authenticated at time '+context.timestamp);
     return [admin.firestore().doc('users/'+user.uid).set(admin.firestore().doc('users/default')),admin.firestore().doc('/users/'+user.uid).update({
-        timestamp:Date.parse(context.timestamp)
+        timestamp : context.timestamp
     })];
 });
 
 /**
 * Registers a new device with the user
 */
-exports.createDevice = functions.https.onCall(async (data, context)=>{
-    return new Promise(async (resolve, reject)=>{
-        if(context.auth !== undefined){
-            //User is eligible? - throw 'resource-exhausted'
-            //Device ID is valid
+exports.createDevice = functions.https.onCall(async (data : {name: string, request: iot.protos.google.cloud.iot.v1.CreateDeviceRequest}, context)=>{
+    if(context.auth !== undefined){
+        admin.firestore().doc('users/'+context.auth.uid).get().then(async userdoc=>{
+            // Check user device registry limit
+            if((userdoc.get('devices') as Array<any>).length >= userdoc.get('devicelimit')){
+                reject(new functions.https.HttpsError('resource-exhausted', "Failed to register device: Account device registration limit exceeded. Your limit is "+userdoc.get('devicelimit')+" device(s)."));
+                return;
+            }
             try {
+
                 var response = await deviceManagerClient.createDevice(data.request);
-            } catch (e){
-                reject(new functions.https.HttpsError('invalid-argument', String(e)))
+            } catch (err){
+                reject(new functions.https.HttpsError('invalid-argument', "Failed to register device: "+String(err)))
+                return;
             }
             try{
-                await admin.database().ref('/users/'+context.auth.uid+'/devices/'+data.request.device.id).set(true);
-
-                await admin.database().ref('/devices/'+data.request.device.id).set({
-                    info : {
-                        'name' : data.name,
-                        'state' : 0
-                    },
-                    metadata : {
-                        'creation-timestamp' : Date.now(),
-                        'owner' : context.auth.uid
-                    }
+                console.log('User '+context.auth?.uid+' created device: ', response[0]);
+                // Create device
+                let deviceref = admin.firestore().doc('/devices/'+data.request.device?.id);
+                await deviceref.set({
+                    'name' : data.name,
+                    'state' : 0,
+                    'creation-timestamp' : FirebaseFirestore.FieldValue.serverTimestamp(),
+                    'owner' : admin.firestore().doc('/users/'+context.auth?.uid)
                 });
-                console.log('User '+context.auth.uid+' created device: ', response[0]);
-                resolve(response[0]);
+                // Add to user
+                await admin.firestore().doc('/users/'+context.auth?.uid).update({
+                    devices: FirebaseFirestore.FieldValue.arrayUnion(deviceref)
+                });
+                return response[0];
             } catch (err) {
-                reject(new functions.https.HttpsError('failed-precondition', String(e)));
+                return new functions.https.HttpsError('failed-precondition', "Failed to register device: "+String(err));
             }
-        } else {
-            reject(new functions.https.HttpsError('unauthenticated', "User not authenticated"));
-        }
-    });
+        });
+    } else {
+        return new functions.https.HttpsError('unauthenticated', "Failed to register device: "+"User not authenticated!");
+    }
 });
 
 /**
@@ -123,7 +125,7 @@ exports.createDevice = functions.https.onCall(async (data, context)=>{
 exports.programCreation = functions.database.ref('/projects/{projectid}/programs/{programid}/').onCreate((snapshot, context)=>{
     const projectid = String(context.params.projectid);
     const programid = String(context.params.programid);
-    const uid = context.auth.uid;
+    const uid = context.auth?.uid;
     const timestamp = context.timestamp;
     console.log('Program '+programid+' has been created in project '+projectid+' by user '+uid+' at time '+timestamp);
     //Metadata
@@ -144,13 +146,13 @@ exports.programCreation = functions.database.ref('/projects/{projectid}/programs
 exports.runCreation = functions.database.ref('/projects/{projectid}/runs/{runid}/').onCreate((snapshot, context)=>{
     const projectid = String(context.params.projectid);
     const runid = String(context.params.runid);
-    const uid = context.auth.uid;
+    const uid = context.auth?.uid;
     const timestamp = context.timestamp;
     console.log('Run '+runid+' has been created in project '+projectid+' by user '+uid+' at time '+timestamp);
     //Metadata
     const p1 = snapshot.ref.child('metadata').set({
         'owner' : uid,
-        'creation-timestamp' : Date.parse(timestamp)
+        'creation-timestamp' : FirebaseFirestore.FieldValue.serverTimestamp()
     });
     //User reflection
     const p2 = admin.database().ref('/users/'+uid+'/runs/'+runid).set(projectid);
@@ -164,19 +166,19 @@ exports.runCreation = functions.database.ref('/projects/{projectid}/runs/{runid}
 */
 exports.projectCreation = functions.database.ref('/projects/{projectid}/').onCreate((snapshot, context)=>{
     const projectid = String(context.params.projectid);
-    const uid = context.auth.uid;
+    const uid = context.auth?.uid;
     const timestamp = context.timestamp;
     console.log('Project '+projectid+' has been created by user '+uid+' at time '+timestamp);
     //Metadata
     const p1 = snapshot.ref.child('metadata').set({
         'owner' : uid,
-        'creation-timestamp' : Date.parse(timestamp)
+        'creation-timestamp' : FirebaseFirestore.FieldValue.serverTimestamp()
     });
     //User reflection
     const p2 = admin.database().ref('/users/'+uid+'/projects/'+projectid).set(true);
     //Shortlist reflection
     const p3 = admin.database().ref('/projectlist/'+projectid).set(true);
     //Update cloud functions cache
-    const p4 = updateProjectListCache();
-    return Promise.all([p1,p2,p3,p4]);
+    // const p4 = updateProjectListCache();
+    return Promise.all([p1,p2,p3]);
 });
