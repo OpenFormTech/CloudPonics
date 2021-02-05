@@ -21,11 +21,11 @@ export class ChartwidgetComponent implements OnInit{
 
   // Input-Populated (User settings)
   @Input() databaseConfig: dbConfig;          // angular firestore db reference
-  @Input() chartType: ChartType;  // chart type
+  @Input() chartType: ChartType;              // chart type
   @Input() chartOptions : ChartOptions;       // chart options
   @Input() chartLegend = true;                // chart legend input
   @Input() chartColor : Color;                // chart color
-  @Input() dataDelimiter : number;       // limiting the amount of data points to pull
+  @Input() dataDelimiter : number;            // limiting the amount of data points to pull
 
   // Database-Populated (from data)
   public chartData: ChartDataSets = {};

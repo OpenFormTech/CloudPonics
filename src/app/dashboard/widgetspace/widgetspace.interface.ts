@@ -14,5 +14,5 @@ export interface UserPreferences {
     chartColor:         Color,
     chartType:          ChartType,
     databaseConfig:     dbConfig,
-    dataDelimiter:          number,
+    dataDelimiter:      number,
 }
