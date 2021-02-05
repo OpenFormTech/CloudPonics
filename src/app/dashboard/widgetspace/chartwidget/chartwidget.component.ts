@@ -25,7 +25,6 @@ export class ChartwidgetComponent implements OnInit{
   @Input() chartLegend = true;                // chart legend input
   @Input() chartColor : Color;                // chart color
   @Input() length : number = 10;              // limiting the amount of data points to pull
-  @Input() timeparser : string;               // the parser for moment.js
 
   // Database-Populated (from data)
   public chartData: ChartDataSets = {};
@@ -65,7 +64,6 @@ export class ChartwidgetComponent implements OnInit{
           };
         });
 
-        // console.log(this.chartData.data);
         // Refresh the chart
         this.chart.update();
       });
