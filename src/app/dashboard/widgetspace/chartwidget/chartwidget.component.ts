@@ -5,7 +5,6 @@ import { Color, BaseChartDirective, Label } from 'ng2-charts';
 import { ChartDataSets, ChartOptions, ChartType, ChartPoint } from 'chart.js';
 import 'firebase/firestore';
 import * as moment from 'moment';
-import { NULL_EXPR } from '@angular/compiler/src/output/output_ast';
 
 interface DataPoint {
   timestamp: firebase.default.firestore.Timestamp;
