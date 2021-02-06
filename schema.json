@@ -26,7 +26,6 @@
                     },
                     "creation" : 12345678,
                     "device" : "device-uuid",
-                    "name" : "Scoobert Doobert Run 1",
                     "complete" : false,
                     "program" : "program-uuid",
                     "owner" : "user-uuid"

@@ -92,7 +92,7 @@ exports.environmentData = functions.pubsub.topic('data').onPublish(async (messag
             }
         }
         if(runcache[data.project][data.run].device === null){
-            console.log('Binding device "'+device+'" to run "'+data.run+'/'+data.project+'".');
+            console.info('Binding device "'+device+'" to run "'+data.run+'/'+data.project+'".');
             runcache[data.project][data.run].device = device;
             await admin.firestore().doc('/projects/'+data.project+'/runs/'+data.run).update({device: device});
         } else if(runcache[data.project][data.run].device !== device){
@@ -113,7 +113,7 @@ exports.environmentData = functions.pubsub.topic('data').onPublish(async (messag
  */
 exports.newUser = functions.auth.user().onCreate((user, context)=>{
     const name = user.displayName || user.email;
-    console.log('New user "'+name+'" (UID: "'+user.uid+'") has authenticated at time '+context.timestamp);
+    console.info('New user "'+name+'" (UID: "'+user.uid+'") has authenticated at time '+context.timestamp);
     return copyDoc('users', 'default', 'users', user.uid, {
         timestamp : admin.firestore.FieldValue.serverTimestamp()
     }, true);
@@ -136,7 +136,7 @@ exports.createDevice = functions.https.onCall(async (data : {name: string, reque
                 return new functions.https.HttpsError('invalid-argument', "Failed to register device: "+String(err));
             }
             try{
-                console.log('User '+context.auth?.uid+' created device: ', response[0]);
+                console.info('User '+context.auth?.uid+' created device: ', response[0]);
                 // Create device
                 await admin.firestore().doc('/devices/'+data.request.device?.id).set({
                     'name' : data.name,
@@ -164,45 +164,53 @@ exports.createDevice = functions.https.onCall(async (data : {name: string, reque
 * Populates project metadata (owner, creation timestamp) and user project ownership on project creation.
 */
 exports.projectCreation = functions.firestore.document('/projects/{projectid}').onCreate((snapshot, context)=>{
-    const projectid = context.params.projectid;
-    const uid = context.auth?.uid;
-    const timestamp = context.timestamp;
-    const userdoc = admin.firestore().doc('/users/'+context.auth?.uid);
-    console.log('Project "'+projectid+'" has been created by user "'+uid+'" at time '+timestamp);
-    //Metadata
-    const p1 = snapshot.ref.update({
-        'owner' : userdoc,
-        'timestamp' : admin.firestore.FieldValue.serverTimestamp()
-    });
-    //User ownership
-    const p2 = userdoc.update({
-        projects: admin.firestore.FieldValue.arrayUnion(projectid)
-    });
-    return Promise.all([p1,p2]);
+    if(snapshot.get("uid")){
+        const projectid = context.params.projectid;
+        const uid = snapshot.get("uid");
+        const timestamp = context.timestamp;
+        console.info('Project "'+projectid+'" has been created by user "'+uid+'" at time '+timestamp);
+        //Metadata
+        const p1 = snapshot.ref.update({
+            'timestamp' : admin.firestore.FieldValue.serverTimestamp(),
+            'owner' : uid,
+            'uid' : admin.firestore.FieldValue.delete()
+        });
+        //User ownership
+        const p2 = admin.firestore().doc('/users/'+uid).update({
+            projects: admin.firestore.FieldValue.arrayUnion(projectid)
+        });
+        return Promise.all([p1,p2]);
+    }
+    return;
 });
 
 /**
 * Populates run metadata (owner, creation timestamp) and user run ownership on run creation.
 */
 exports.runCreation = functions.firestore.document('/projects/{projectid}/runs/{runid}').onCreate((snapshot, context)=>{
-    const projectid = String(context.params.projectid);
-    const runid = String(context.params.runid);
-    const uid = context.auth?.uid;
-    const timestamp = context.timestamp;
-    console.log('Run "'+projectid+'/'+runid+'" has been by user "'+uid+'" at time '+timestamp);
-    //Metadata
-    const p1 = snapshot.ref.update({
-        'owner' : uid,
-        'timestamp' : admin.firestore.FieldValue.serverTimestamp()
-    });
-    //User ownership
-    const p2 = admin.firestore().doc('/users/'+uid).update({
-        runs: admin.firestore.FieldValue.arrayUnion({
-            project: projectid,
-            run: runid
-        })
-    });
-    return Promise.all([p1,p2]);
+    if(snapshot.data().uid){
+        const projectid = String(context.params.projectid);
+        const runid = String(context.params.runid);
+        const uid = snapshot.data().uid as string;
+        const timestamp = context.timestamp;
+        console.info('Run "'+projectid+'/'+runid+'" has been created by user "'+uid+'" at time '+timestamp);
+        //Metadata
+        const p1 = snapshot.ref.update({
+            'owner' : uid,
+            'timestamp' : admin.firestore.FieldValue.serverTimestamp(),
+            'complete' : false,
+            'uid' : admin.firestore.FieldValue.delete()
+        });
+        //User ownership
+        const p2 = admin.firestore().doc('/users/'+uid).update({
+            runs: admin.firestore.FieldValue.arrayUnion({
+                project: projectid,
+                run: runid
+            })
+        });
+        return Promise.all([p1,p2]);
+    }
+    return;
 });
 
 /**
@@ -215,7 +223,7 @@ exports.runCreation = functions.firestore.document('/projects/{projectid}/runs/{
 //     const uid = context.auth?.uid;
 //     const timestamp = context.timestamp;
 //     const userdoc = admin.firestore().doc('/users/'+uid);
-//     console.log('Program "'+programid+'" for project "'+projectid+'" has been created by user "'+uid+'" at time '+timestamp);
+//     console.info('Program "'+programid+'" for project "'+projectid+'" has been created by user "'+uid+'" at time '+timestamp);
 //     //Metadata
 //     const p1 = snapshot.ref.child('metadata').set({
 //         'owner' : userdoc,

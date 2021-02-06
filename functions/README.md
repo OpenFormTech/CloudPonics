@@ -25,3 +25,7 @@ Populates user object on new user authentication. Copies defaults from `users/de
 # Device Registry
 
 Checks user registry limits, then registers a new [IoT device](https://github.com/OpenFormTech/PeaPod) to the GCP IoT Core registry. Populates user device list (`users/uid/devices`), as well as devices list (`devices/deviceid`) with device fields (i.e. name, timestamp).
+
+# Project, Run, Program Creation
+
+> Note: for security reasons, **user `uid` is a *required* document field populated by the client**, as [Firestore does not support contextual auth](https://stackoverflow.com/a/47558027). Is is checked, copied to an `owner` field (which is **write-protected**), and then deleted, all by the Cloud Function.
