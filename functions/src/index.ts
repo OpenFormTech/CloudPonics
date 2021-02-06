@@ -16,7 +16,7 @@ interface IData {
 
 interface IRunDocCache {
     device: string,
-    timestamp: FirebaseFirestore.Timestamp
+    timestamp: admin.firestore.Timestamp
 }
 // Caches only the permanent stuff
 interface IRunCache {
@@ -25,7 +25,50 @@ interface IRunCache {
     }
 };
 
-var runcache : IRunCache;
+let runcache : IRunCache;
+
+async function copyDoc(collectionFrom: string, docFrom: string, collectionTo: string, docTo: string, data: any = {}, recursive = false): Promise<any> {
+    // document reference
+    const docRef = admin.firestore().collection(collectionFrom).doc(docFrom);
+    let docData;
+    try {
+        // copy the document
+        docData = await docRef
+        .get()
+        .then((doc) => doc.exists && doc.data());
+    } catch (err) {
+        throw new Error('Error reading document "'+`${collectionFrom}/${docFrom}`+'": '+JSON.stringify(err));
+    }
+    if (docData) {
+        // document exists, create the new item
+        await admin.firestore().collection(collectionTo).doc(docTo).set({
+            ...docData, 
+            ...data 
+        }).catch((error) => {
+            throw new Error('Error creating document: "'+`${collectionTo}/${docTo}`+'": '+JSON.stringify(error));
+        });
+    
+        // if copying of the subcollections is needed
+        if (recursive) {
+            // subcollections
+            const subcollections = await docRef.listCollections();
+            for await (const subcollectionRef of subcollections) {
+                const subcollectionPath = `${collectionFrom}/${docFrom}/${subcollectionRef.id}`;
+                // get all the documents in the collection
+                return await subcollectionRef.get()
+                .then(async (snapshot) => {
+                    const docs = snapshot.docs;
+                    for await (const doc of docs) {
+                        await copyDoc(subcollectionPath, doc.id, `${collectionTo}/${docTo}/${subcollectionRef.id}`, doc.id, true);
+                    }
+                }).catch((error) => {
+                    throw new Error('Error reading subcollection: "'+`${subcollectionPath}`+'": '+JSON.stringify(error));
+                });
+            }
+        }
+    }
+};
+  
 
 /**
 * Populates database data fields from IoT telemetry.
@@ -45,24 +88,23 @@ exports.environmentData = functions.pubsub.topic('data').onPublish(async (messag
                     timestamp: runref.get("timestamp")
                 };
             } else {
-                return new Error('No destination run "'+data.run+'/'+data.project+'" exists.'), message;
+                return new Error('No destination run "'+data.run+'/'+data.project+'" exists.');
             }
         }
         if(runcache[data.project][data.run].device === null){
             console.log('Binding device "'+device+'" to run "'+data.run+'/'+data.project+'".');
             runcache[data.project][data.run].device = device;
             await admin.firestore().doc('/projects/'+data.project+'/runs/'+data.run).update({device: device});
-        } else if(runcache[data.project][data.run].device === device){
-            console.info('Recieved device data successfully from "'+device+'": '+data.label+' - '+data.value);
-            return admin.firestore().collection('/projects/'+data.project+'/runs/'+data.run+'/'+data.label).add({
-                timestamp : data.timestamp,
-                value : data.value
-            });
-        } else {
-            return new Error('Incorrect device ID "'+device+'" for run "'+data.run+'", expected "'+device+'"'), message;
+        } else if(runcache[data.project][data.run].device !== device){
+            return new Error('Incorrect device ID "'+device+'" for run "'+data.run+'", expected "'+device+'"');
         }
+        console.info('Recieved device data successfully from "'+device+'": '+data.label+' - '+data.value);
+        return admin.firestore().collection('/projects/'+data.project+'/runs/'+data.run+'/'+data.label).add({
+            timestamp : data.timestamp,
+            value : data.value
+        });
     } else {
-        return new Error('No destination project "'+message.json.project+'" exists.'), message;
+        return new Error('No destination project "'+message.json.project+'" exists.');
     }
 });
 
@@ -72,9 +114,9 @@ exports.environmentData = functions.pubsub.topic('data').onPublish(async (messag
 exports.newUser = functions.auth.user().onCreate((user, context)=>{
     const name = user.displayName || user.email;
     console.log('New user "'+name+'" (UID: "'+user.uid+'") has authenticated at time '+context.timestamp);
-    return [admin.firestore().doc('users/'+user.uid).set(admin.firestore().doc('users/default')),admin.firestore().doc('/users/'+user.uid).update({
-        timestamp : FirebaseFirestore.FieldValue.serverTimestamp()
-    })];
+    return copyDoc('users', 'default', 'users', user.uid, {
+        timestamp : admin.firestore.FieldValue.serverTimestamp()
+    }, true);
 });
 
 /**
@@ -82,35 +124,36 @@ exports.newUser = functions.auth.user().onCreate((user, context)=>{
 */
 exports.createDevice = functions.https.onCall(async (data : {name: string, request: iot.protos.google.cloud.iot.v1.CreateDeviceRequest}, context)=>{
     if(context.auth !== undefined){
-        admin.firestore().doc('users/'+context.auth.uid).get().then(async userdoc=>{
+        return admin.firestore().doc('users/'+context.auth.uid).get().then(async userdoc=>{
             // Check user device registry limit
             if((userdoc.get('devices') as Array<any>).length >= userdoc.get('devicelimit')){
                 return new functions.https.HttpsError('resource-exhausted', "Failed to register device: Account device registration limit exceeded. Your limit is "+userdoc.get('devicelimit')+" device(s).");
             }
+            let response;
             try {
-
-                var response = await deviceManagerClient.createDevice(data.request);
+                response = await deviceManagerClient.createDevice(data.request);
             } catch (err){
                 return new functions.https.HttpsError('invalid-argument', "Failed to register device: "+String(err));
             }
             try{
                 console.log('User '+context.auth?.uid+' created device: ', response[0]);
                 // Create device
-                let deviceref = admin.firestore().doc('/devices/'+data.request.device?.id);
-                await deviceref.set({
+                await admin.firestore().doc('/devices/'+data.request.device?.id).set({
                     'name' : data.name,
                     'state' : 0,
-                    'timestamp' : FirebaseFirestore.FieldValue.serverTimestamp(),
-                    'owner' : admin.firestore().doc('/users/'+context.auth?.uid)
+                    'timestamp' : admin.firestore.FieldValue.serverTimestamp(),
+                    'owner' : context.auth?.uid
                 });
                 // Add to user
                 await admin.firestore().doc('/users/'+context.auth?.uid).update({
-                    devices: FirebaseFirestore.FieldValue.arrayUnion(deviceref)
+                    devices: admin.firestore.FieldValue.arrayUnion(data.request.device?.id)
                 });
                 return response[0];
             } catch (err) {
                 return new functions.https.HttpsError('failed-precondition', "Failed to register device: "+String(err));
             }
+        }).catch(err=>{
+            return err;
         });
     } else {
         return new functions.https.HttpsError('unauthenticated', "Failed to register device: "+"User not authenticated!");
@@ -120,8 +163,8 @@ exports.createDevice = functions.https.onCall(async (data : {name: string, reque
 /**
 * Populates project metadata (owner, creation timestamp) and user project ownership on project creation.
 */
-exports.projectCreation = functions.firestore.document('/projects/{projectid}/').onCreate((snapshot, context)=>{
-    const projectid = String(context.params.projectid);
+exports.projectCreation = functions.firestore.document('/projects/{projectid}').onCreate((snapshot, context)=>{
+    const projectid = context.params.projectid;
     const uid = context.auth?.uid;
     const timestamp = context.timestamp;
     const userdoc = admin.firestore().doc('/users/'+context.auth?.uid);
@@ -129,11 +172,11 @@ exports.projectCreation = functions.firestore.document('/projects/{projectid}/')
     //Metadata
     const p1 = snapshot.ref.update({
         'owner' : userdoc,
-        'timestamp' : FirebaseFirestore.FieldValue.serverTimestamp()
+        'timestamp' : admin.firestore.FieldValue.serverTimestamp()
     });
     //User ownership
     const p2 = userdoc.update({
-        projects: FirebaseFirestore.FieldValue.arrayUnion(snapshot.ref)
+        projects: admin.firestore.FieldValue.arrayUnion(projectid)
     });
     return Promise.all([p1,p2]);
 });
@@ -141,21 +184,23 @@ exports.projectCreation = functions.firestore.document('/projects/{projectid}/')
 /**
 * Populates run metadata (owner, creation timestamp) and user run ownership on run creation.
 */
-exports.runCreation = functions.firestore.document('/projects/{projectid}/runs/{runid}/').onCreate((snapshot, context)=>{
+exports.runCreation = functions.firestore.document('/projects/{projectid}/runs/{runid}').onCreate((snapshot, context)=>{
     const projectid = String(context.params.projectid);
     const runid = String(context.params.runid);
     const uid = context.auth?.uid;
     const timestamp = context.timestamp;
-    const userdoc = admin.firestore().doc('/users/'+uid);
     console.log('Run "'+projectid+'/'+runid+'" has been by user "'+uid+'" at time '+timestamp);
     //Metadata
     const p1 = snapshot.ref.update({
-        'owner' : userdoc,
-        'timestamp' : FirebaseFirestore.FieldValue.serverTimestamp()
+        'owner' : uid,
+        'timestamp' : admin.firestore.FieldValue.serverTimestamp()
     });
     //User ownership
-    const p2 = userdoc.update({
-        runs: FirebaseFirestore.FieldValue.arrayUnion(snapshot.ref)
+    const p2 = admin.firestore().doc('/users/'+uid).update({
+        runs: admin.firestore.FieldValue.arrayUnion({
+            project: projectid,
+            run: runid
+        })
     });
     return Promise.all([p1,p2]);
 });
@@ -163,22 +208,22 @@ exports.runCreation = functions.firestore.document('/projects/{projectid}/runs/{
 /**
 * Populates program metadata (owner, creation timestamp) and user program ownership on program creation.
 */
-exports.programCreation = functions.database.ref('/projects/{projectid}/programs/{programid}/').onCreate((snapshot, context)=>{
-    // TODO: Check for field completeness? Interface?
-    const projectid = String(context.params.projectid);
-    const programid = String(context.params.programid);
-    const uid = context.auth?.uid;
-    const timestamp = context.timestamp;
-    const userdoc = admin.firestore().doc('/users/'+uid);
-    console.log('Program "'+programid+'" for project "'+projectid+'" has been created by user "'+uid+'" at time '+timestamp);
-    //Metadata
-    const p1 = snapshot.ref.child('metadata').set({
-        'owner' : userdoc,
-        'timestamp' : FirebaseFirestore.FieldValue.serverTimestamp()
-    });
-    //User reflection
-    const p2 = userdoc.update({
-        programs: FirebaseFirestore.FieldValue.arrayUnion(snapshot.ref)
-    });
-    return Promise.all([p1,p2]);
-});
+// exports.programCreation = functions.database.ref('/projects/{projectid}/programs/{programid}/').onCreate((snapshot, context)=>{
+//     // TODO: Check for field completeness? Interface?
+//     const projectid = String(context.params.projectid);
+//     const programid = String(context.params.programid);
+//     const uid = context.auth?.uid;
+//     const timestamp = context.timestamp;
+//     const userdoc = admin.firestore().doc('/users/'+uid);
+//     console.log('Program "'+programid+'" for project "'+projectid+'" has been created by user "'+uid+'" at time '+timestamp);
+//     //Metadata
+//     const p1 = snapshot.ref.child('metadata').set({
+//         'owner' : userdoc,
+//         'timestamp' : admin.firestore.FieldValue.serverTimestamp()
+//     });
+//     //User reflection
+//     const p2 = userdoc.update({
+//         programs: admin.firestore.FieldValue.arrayUnion(snapshot.ref)
+//     });
+//     return Promise.all([p1,p2]);
+// });
