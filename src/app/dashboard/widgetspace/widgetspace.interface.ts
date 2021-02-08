@@ -1,5 +1,4 @@
 import { ChartOptions, ChartType } from "chart.js";
-import { Color } from "ng2-charts";
 
 // Interface for TS for our database transactions
 export interface dbConfig {
