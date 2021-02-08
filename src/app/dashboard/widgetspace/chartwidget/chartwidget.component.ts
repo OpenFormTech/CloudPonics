@@ -45,8 +45,8 @@ export class ChartwidgetComponent implements OnInit{
     this.auth.getUser().then(() =>{
       // CREATE LISTENER w/ CUSTOM QUERY
       this.collectionReference.collection(this.dataCollection)
-        .orderBy('timestamp')               // ordering the collection be sorted by timestamp
-        .limitToLast(this.dataDelimiter)    // limiting datastream to N points
+        .orderBy('timestamp', 'desc')               // ordering the collection be sorted by timestamp
+        .limit(this.dataDelimiter)    // limiting datastream to N points
         .onSnapshot({                       // subscribing to datastream
           next: (data) => {                 // data is an array of documents
             // the net data collection
@@ -59,14 +59,16 @@ export class ChartwidgetComponent implements OnInit{
                   y: v.data().value
                 }
               );
+            });
 
-              // validating number of points
-              if (this.chartData.data.length > this.dataDelimiter) {
-                this.chartData.data.slice(1);
-              }
-
+            // validating number of points
+            if (this.chartData.data.length > this.dataDelimiter) {
+              this.chartData.data.slice(1);
               this.chart.update();
-            })},
+            }
+
+            this.chart.update();
+          },
           error: (err) => {
             console.log(`An error has occured: ${err.message}`)
           }
