@@ -1,9 +1,11 @@
 import { Component, OnInit, ComponentFactoryResolver, ViewChild } from '@angular/core';
 import { WidgetdirectiveDirective } from './widgetdirective.directive';
 import { ChartwidgetComponent } from './chartwidget/chartwidget.component';
-import { ChartOptions } from 'chart.js';
+// import { ChartOptions } from 'chart.js';
 import { Color } from 'ng2-charts';
-import { dbConfig, UserPreferences } from './widgetspace.interface';
+import { FirestoreChartPreferences, RawFirestoreChartPreferences } from './widgetspace.interface';
+import { AuthService } from 'src/app/services/auth.service';
+import { AngularFirestore } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-widgetspace',
@@ -16,7 +18,7 @@ export class WidgetspaceComponent implements OnInit {
   @ViewChild(WidgetdirectiveDirective, {static: true}) widgetHost: WidgetdirectiveDirective;
 
   // creating a ComponentFactoryResolver to generate a componentFactory within the code
-  constructor(private widgetFactoryResolver: ComponentFactoryResolver) { }
+  constructor(private widgetFactoryResolver: ComponentFactoryResolver, private auth: AuthService, private db: AngularFirestore) { }
 
   ngOnInit(): void {
     // configuring the component factory
@@ -36,34 +38,31 @@ export class WidgetspaceComponent implements OnInit {
     // Where can it get it?
     // What should the chart look like?
 
-    function chartOptionsBuilder(units: string, yaxisname: string): ChartOptions {
-      let t: ChartOptions = {
+    /**
+     * This function manipulates the data given to it by the subcription and
+     * fixes the axis to be legible.
+     */
+    function resolveChartOptions(data: FirestoreChartPreferences): FirestoreChartPreferences {
+      let o: FirestoreChartPreferences = data;
+
+      o.chartOptions = {
         scales: {
-          xAxes: [{
-            type: 'time',
-            time: {
-              displayFormats: {
-                hour: "h:mm a"
-              },
-              unit: "hour",
-            },
-            distribution: "linear"
-          }],
+          xAxes: data.chartOptions.scales.xAxes,
           yAxes: [{
             type: 'linear',
             scaleLabel: {
               display: true,
-              labelString: `${yaxisname} (${units})`
+              labelString: `${data.chartOptions.scales.yAxes[0].scaleLabel['axis-name']} (${data.chartOptions.scales.yAxes[0].scaleLabel['axis-units']})`
             }
           }]
         }
       };
 
-      return t;
+      return o;
     }
 
-    // TODO: GET USER CHART PREF LIST<ChartOptions>, etc. FROM DATABASE 
-
+    // the great thing about this is that I can make a map object for this
+    // because everything is a string object
     var grayChartColor : Color = { // grey
       backgroundColor: 'rgba(148,159,177,0.2)',
       borderColor: 'rgba(148,159,177,1)',
@@ -73,47 +72,39 @@ export class WidgetspaceComponent implements OnInit {
       pointHoverBorderColor: 'rgba(148,159,177,0.8)'
     };
 
-    var airTemp: dbConfig = {
-      project : "project-uuid",
-      run : "run-uuid",
-      label : "air-temperature"
-    };
+    // getting the user chart prefs
 
-    var waterLevel: dbConfig = {
-      project : "project-uuid",
-      run : "run-uuid",
-      label : "water-level"
-    };
+    this.auth.getUser().then(user => {
 
-    // assembling the preferences to be inputted to each chart widget
-    var prefs: UserPreferences[] = [
-      {
-        chartOptions : chartOptionsBuilder("kPa", "Air Pressure"),
-        chartColor : grayChartColor,
-        databaseConfig : airTemp,
-        chartType: "scatter",
-        dataDelimiter: 10
-      },
-      {
-        chartOptions : chartOptionsBuilder("ml", "Water Level"),
-        chartColor : grayChartColor,
-        databaseConfig : waterLevel,
-        chartType: "line",
-        dataDelimiter: 10
-      }
-    ];
+      /**
+       * Basically:
+       * 
+       * For each chart preference pulled by our subcription:
+       *  1. Fix the ChartOptions
+       *  2. Build the UserPrefence object, basically a container to hold everything
+       *  3. Build a new ChartWidget
+       *  4. Pass in all necessary params into it
+       */
 
-    // creating all the chart widgets
-    for(const pref of prefs){
-      // creating the component in the given view
-      var widget = viewContainerRef.createComponent<ChartwidgetComponent>(widgetFactory).instance;
+      // making a request to firestore to get the dashboard preferences document
+      let dataref = this.db.doc<RawFirestoreChartPreferences>('users/' + user.uid + '/preferences/dashboard');
+      // iterating over each field it got
+      dataref.get().forEach(c => {
+        // mapping to complete each chart's y-axis label
+        c.data().charts.forEach(rawChartOptions => {
+          let resolvedChartPrefs = resolveChartOptions(rawChartOptions)
 
-      // Pass config to Input
-      widget.chartOptions = pref.chartOptions;
-      widget.databaseConfig = pref.databaseConfig;
-      widget.chartColor = pref.chartColor;
-      widget.dataDelimiter = pref.dataDelimiter;
-      widget.chartType = pref.chartType;
-    }
+          var widget = viewContainerRef.createComponent<ChartwidgetComponent>(widgetFactory).instance;
+
+          // Pass config to Input
+          widget.chartOptions        = resolvedChartPrefs.chartOptions;
+          widget.dataCollection      = resolvedChartPrefs.dataCollection;
+          widget.chartColor          = grayChartColor;
+          widget.dataDelimiter       = resolvedChartPrefs.delimiter;
+          widget.chartType           = resolvedChartPrefs.chartType;
+          widget.collectionReference = resolvedChartPrefs.dataRef;
+        });
+      });
+    });
   }
 }
