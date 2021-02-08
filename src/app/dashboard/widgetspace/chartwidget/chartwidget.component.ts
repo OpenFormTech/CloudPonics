@@ -5,11 +5,6 @@ import { ChartDataSets, ChartOptions, ChartType, ChartPoint } from 'chart.js';
 import 'firebase/firestore';
 import * as moment from 'moment';
 
-interface DataPoint {
-  timestamp: firebase.default.firestore.Timestamp;
-  value: number;
-}
-
 @Component({
   selector: 'app-chartwidget',
   templateUrl: './chartwidget.component.html',
@@ -47,13 +42,13 @@ export class ChartwidgetComponent implements OnInit{
     // my god this looks so fucking nasty holy shit
 
     // GET USER
-    this.auth.getUser().then(_ =>{
+    this.auth.getUser().then(() =>{
       // CREATE LISTENER w/ CUSTOM QUERY
       this.collectionReference.collection(this.dataCollection)
         .orderBy('timestamp')               // ordering the collection be sorted by timestamp
-        .limitToLast(this.dataDelimiter)    // limiting N points
+        .limitToLast(this.dataDelimiter)    // limiting datastream to N points
         .onSnapshot({                       // subscribing to datastream
-          next: (data) => {
+          next: (data) => {                 // data is an array of documents
             // the net data collection
             data.forEach(v => {
               // pushing the new data to our chartdata array
@@ -64,8 +59,17 @@ export class ChartwidgetComponent implements OnInit{
                   y: v.data().value
                 }
               );
+
+              // validating number of points
+              if (this.chartData.data.length > this.dataDelimiter) {
+                this.chartData.data.slice(1);
+              }
+
               this.chart.update();
-            })}
+            })},
+          error: (err) => {
+            console.log(`An error has occured: ${err.message}`)
+          }
       });
     });
   }
