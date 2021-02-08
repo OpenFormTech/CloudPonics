@@ -8,11 +8,19 @@ export interface dbConfig {
     label:      string
 }
 
-// Interface for TS for the colletcion of preferences to build chart widgets
-export interface UserPreferences {
+export interface FirestoreChartPreferences {
+    backgroundColor:    string,
     chartOptions:       ChartOptions,
-    chartColor:         Color,
     chartType:          ChartType,
-    databaseConfig:     dbConfig,
-    dataDelimiter:      number,
+    color:              string,
+    dataRef:            firebase.default.firestore.DocumentReference,
+    delimiter:          number,
+    order:              number,
+    dataCollection:     string
+}
+
+// because I need an interface to not get an error saying
+// 'charts doesn't exist on type'
+export interface RawFirestoreChartPreferences {
+    charts: [FirestoreChartPreferences]
 }
