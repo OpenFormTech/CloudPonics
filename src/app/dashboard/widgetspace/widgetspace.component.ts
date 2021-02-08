@@ -97,12 +97,12 @@ export class WidgetspaceComponent implements OnInit {
           var widget = viewContainerRef.createComponent<ChartwidgetComponent>(widgetFactory).instance;
 
           // Pass config to Input
-          widget.chartOptions        = resolvedChartPrefs.chartOptions;
-          widget.dataCollection      = resolvedChartPrefs.dataCollection;
-          widget.chartColor          = grayChartColor;
-          widget.dataDelimiter       = resolvedChartPrefs.delimiter;
-          widget.chartType           = resolvedChartPrefs.chartType;
-          widget.collectionReference = resolvedChartPrefs.dataRef;
+          widget.chartOptions        = resolvedChartPrefs.chartOptions;   // is what it sounds like
+          widget.dataCollection      = resolvedChartPrefs.dataCollection; // air-temperature
+          widget.chartColor          = grayChartColor;                    // chart color
+          widget.dataDelimiter       = resolvedChartPrefs.delimiter;      // number of datapoints to get
+          widget.chartType           = resolvedChartPrefs.chartType;      // scatter
+          widget.collectionReference = resolvedChartPrefs.dataRef;        // reference to collection
         });
       });
     });
