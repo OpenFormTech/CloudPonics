@@ -24,7 +24,12 @@ Populates user object on new user authentication. Copies defaults from `users/de
 
 # Device Registry
 
-Checks user registry limits, then registers a new [IoT device](https://github.com/OpenFormTech/PeaPod) to the GCP IoT Core registry. Populates user device list (`users/uid/devices`), as well as devices list (`devices/deviceid`) with device fields (i.e. name, timestamp).
+Checks user registry limits, then registers a new [IoT device](https://github.com/OpenFormTech/PeaPod) to the GCP IoT Core registry. Generates new SSL keypair for the device (acts as [provisioner](https://cloud.google.com/iot/docs/concepts/device-security#provisioning_credentials)), returns private key and uses public key to register new device object. Populates user device list (`users/uid/devices`), as well as devices list (`devices/deviceid`) with device fields (i.e. name, timestamp).
+
+## Device Creation Request Data
+
+Request: `{ devicename: string, region: string, registry: string }`
+Response: `{ device: iot ... IDevice, privatekey: string }`
 
 # Project, Run, Program Creation
 

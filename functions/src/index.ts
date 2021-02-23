@@ -1,8 +1,24 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import * as iot from '@google-cloud/iot';
+import {v4 as uuid} from 'uuid';
+import * as fs from 'fs';
+import { exec } from 'child_process';
 
 const deviceManagerClient : iot.v1.DeviceManagerClient = new iot.v1.DeviceManagerClient();
+const shell = (command : string) : Promise<string> => {
+    return new Promise<string>((resolve, reject)=>{
+        exec(command, (error, stdout, stderr)=>{
+            if(error){
+                reject(error);
+            }else if(stderr.length > 0){
+                reject(stderr);
+            } else {
+                resolve(stdout);
+            }
+        });
+    });
+};
 
 admin.initializeApp();
 
@@ -26,6 +42,11 @@ interface IRunCache {
 };
 
 let runcache : IRunCache;
+
+type Keypair = {
+    public: string,
+    private: string
+}
 
 async function copyDoc(collectionFrom: string, docFrom: string, collectionTo: string, docTo: string, data: any = {}, recursive = false): Promise<any> {
     // document reference
@@ -119,10 +140,23 @@ exports.newUser = functions.auth.user().onCreate((user, context)=>{
     }, true);
 });
 
+async function generateRSAKeypair() : Promise<Keypair>{
+    await shell('openssl genpkey -algorithm RSA -out rsa_private.pem -pkeyopt rsa_keygen_bits:2048');
+    await shell('openssl rsa -in rsa_private.pem -pubout -out rsa_public.pem');
+    const publickey = fs.readFileSync('./rsa_public.pem').toString();
+    const privatekey = fs.readFileSync('./rsa_private.pem').toString();
+    fs.unlinkSync('./rsa_public.pem');
+    fs.unlinkSync('./rsa_private.pem');
+    return {
+        public: publickey,
+        private: privatekey
+    };
+}
+
 /**
 * Registers a new device with the user
 */
-exports.createDevice = functions.https.onCall(async (data : {name: string, request: iot.protos.google.cloud.iot.v1.CreateDeviceRequest}, context)=>{
+exports.createDevice = functions.https.onCall(async (data : {devicename: string, region: string, registry: string}, context)=>{
     if(context.auth !== undefined){
         return admin.firestore().doc('users/'+context.auth.uid).get().then(async userdoc=>{
             // Check user device registry limit
@@ -130,25 +164,40 @@ exports.createDevice = functions.https.onCall(async (data : {name: string, reque
                 return new functions.https.HttpsError('resource-exhausted', "Failed to register device: Account device registration limit exceeded. Your limit is "+userdoc.get('devicelimit')+" device(s).");
             }
             let response;
+            const keypair = await generateRSAKeypair();
+            const request : iot.protos.google.cloud.iot.v1.ICreateDeviceRequest = {
+                parent: deviceManagerClient.registryPath(process.env.GCLOUD_PROJECT as string, data.region, data.registry),
+                device : {
+                    id: 'peapod-'+uuid(),
+                    credentials: [
+                        {
+                            publicKey: {
+                                format: 'RSA_PEM',
+                                key: keypair.public,
+                            }
+                        }
+                    ]
+                }
+            };
             try {
-                response = await deviceManagerClient.createDevice(data.request);
+                response = await deviceManagerClient.createDevice(request);
             } catch (err){
                 return new functions.https.HttpsError('invalid-argument', "Failed to register device: "+String(err));
             }
             try{
                 console.info('User '+context.auth?.uid+' created device: ', response[0]);
                 // Create device
-                await admin.firestore().doc('/devices/'+data.request.device?.id).set({
-                    'name' : data.name,
+                await admin.firestore().doc('/devices/'+request.device?.id).set({
+                    'name' : data.devicename,
                     'state' : 0,
                     'timestamp' : admin.firestore.FieldValue.serverTimestamp(),
                     'owner' : context.auth?.uid
                 });
                 // Add to user
                 await admin.firestore().doc('/users/'+context.auth?.uid).update({
-                    devices: admin.firestore.FieldValue.arrayUnion(data.request.device?.id)
+                    devices: admin.firestore.FieldValue.arrayUnion(request.device?.id)
                 });
-                return response[0];
+                return {device: response[0], privatekey: keypair.private};
             } catch (err) {
                 return new functions.https.HttpsError('failed-precondition', "Failed to register device: "+String(err));
             }

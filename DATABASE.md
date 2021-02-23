@@ -14,3 +14,16 @@
 3. _Programs_: The `programs` set contains all programs in JSON format, listed by UUID. Programs outline the sequence of environment _phases_ in the plant's growth cycle. Each phase holds the settings for each of the device's actionable environment variables (i.e. `air-temperature`, `led-blue-power`, etc.) over a given duration; the program does not tell the device _how_ to set its actuators, merely the _target values_ for the variables. Naturally, the sum of all the phases' durations is the total duration of the program. Programs can only be associated with __one__ project. A project can (and likely will) have __many__ programs.
 4. _Runs and Data_: The `runs` set contains all runs, listed by UUID. The `runlist` is the shallow query for this set, maintained by Firebase Cloud Function. Runs are the primary unit of data collection - a run is equivalent to one full execution of a program. Runs are 'published' by the device, creating the run, datasets, and info (associated device UUID, run name, completion status (default false), associated program UUID). The `data` set inside a run contains all datasets by their label (i.e. `air-temperature`, `ppm-co2`, etc.). Each dataset contains a set of data points (auto-generated UUID) containing the timestamp and value of the data point. Metadata is populated by Firebase Cloud Functions on run creation.
 5. _Projects_: The `projects` set contains all projects, listed by UUID. The `projectlist` is the shallow query for this set, maintained by Firebase Cloud Function. Projects are the largest unit of activity - a project is essentially a container of similar runs of the _same species_ and the programs they employ. 
+
+## Permissions
+
+- Permissions (all imply authenticated, CASCADING)
+    - `projects/$projectid/metadata`
+        - .write `.../metadata/owner` == auth.uid or `projects/$projectid` doesn't exist
+        - .read: true
+    - `.../runs/$runid/metadata`
+        - .write: if `.../metadata/owner` == auth.uid or `runs/$runid` doesn't exist
+        - .read: true
+    - `.../runs/$runid/data/$index`
+        - .write: if `.../metadata/owner` == auth.uid and !data.exists()
+        - .validate: newData.hasChildren(['timestamp'],['value']) and newData.child('timestamp').isNumber() and newData.child('value').isNumber()
